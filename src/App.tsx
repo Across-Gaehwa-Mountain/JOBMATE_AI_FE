@@ -10,503 +10,641 @@ import { ExcludedFeatures } from "./components/excluded-features";
 import { DesignSystem } from "./components/design-system";
 import { StaticScreens } from "./components/static-screens";
 import { Button } from "./components/ui/button";
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "./components/ui/dialog";
+import {
+	Dialog,
+	DialogContent,
+	DialogFooter,
+	DialogHeader,
+	DialogTitle,
+} from "./components/ui/dialog";
 import { Input } from "./components/ui/input";
 import { Settings, Zap, Palette, Monitor } from "lucide-react";
 
-type AppStep = 'landing' | 'upload' | 'summary' | 'analysis' | 'actions' | 'history' | 'excluded-features' | 'design-system' | 'static-screens';
+type AppStep =
+	| "landing"
+	| "upload"
+	| "summary"
+	| "analysis"
+	| "actions"
+	| "history"
+	| "excluded-features"
+	| "design-system"
+	| "static-screens";
 
 interface AppState {
-  step: AppStep;
-  file: File | null;
-  summary: string;
-  analysisData: any | null;
-  reportHistory: ReportSummary[];
-  selectedReportId: string | null;
-  userId: string | null;
-  isUserDialogOpen: boolean;
-  tempUserId: string;
+	step: AppStep;
+	file: File | null;
+	summary: string;
+	analysisData: any | null;
+	reportHistory: ReportSummary[];
+	selectedReportId: string | null;
+	userId: string | null;
+	isUserDialogOpen: boolean;
+	tempUserId: string;
 }
 
 interface ReportSummary {
-  id: string;
-  fileName: string;
-  createdAt: string;
-  score?: number;
-  goodPoints?: string[];
-  improvementPoints?: string[];
-  missedPoints?: string[];
-  actionItems?: ActionItem[];
+	id: string;
+	fileName: string;
+	createdAt: string;
+	score?: number;
+	goodPoints?: string[];
+	improvementPoints?: string[];
+	missedPoints?: string[];
+	actionItems?: ActionItem[];
 }
 
 export default function App() {
-  const location = useLocation();
-  const navigate = useNavigate();
-  const [state, setState] = useState<AppState>({
-    step: 'landing',
-    file: null,
-    summary: '',
-    analysisData: null,
-    reportHistory: [],
-    selectedReportId: null,
-    userId: null,
-    isUserDialogOpen: false,
-    tempUserId: ''
-  });
+	const location = useLocation();
+	const navigate = useNavigate();
+	const [state, setState] = useState<AppState>({
+		step: "landing",
+		file: null,
+		summary: "",
+		analysisData: null,
+		reportHistory: [],
+		selectedReportId: null,
+		userId: null,
+		isUserDialogOpen: false,
+		tempUserId: "",
+	});
 
-  // Deep-link 처리: /report/:id 경로 진입 시 해당 보고서 열기 (userId가 설정된 경우)
-  if (typeof window !== 'undefined') {
-    // no-op: vite ssr 아님, 방어적 체크
-  }
+	// Deep-link 처리: /report/:id 경로 진입 시 해당 보고서 열기 (userId가 설정된 경우)
+	if (typeof window !== "undefined") {
+		// no-op: vite ssr 아님, 방어적 체크
+	}
 
-  const handleGetStarted = () => {
-    setState(prev => ({ ...prev, step: 'upload' }));
-    navigate('/report/new');
-  };
+	const handleGetStarted = () => {
+		setState((prev) => ({ ...prev, step: "upload" }));
+		navigate("/report/new");
+	};
 
-  const handleChooseGuest = () => {
-    setState(prev => ({ ...prev, userId: null, reportHistory: [], step: 'upload' }));
-    navigate('/report/new');
-  };
+	const handleChooseGuest = () => {
+		setState((prev) => ({
+			...prev,
+			userId: null,
+			reportHistory: [],
+			step: "upload",
+		}));
+		navigate("/report/new");
+	};
 
-  const handleChooseUser = () => {
-    setState(prev => ({ ...prev, isUserDialogOpen: true, tempUserId: prev.userId ?? '' }));
-  };
+	const handleChooseUser = () => {
+		setState((prev) => ({
+			...prev,
+			isUserDialogOpen: true,
+			tempUserId: prev.userId ?? "",
+		}));
+	};
 
-  const closeUserDialog = () => {
-    setState(prev => ({ ...prev, isUserDialogOpen: false }));
-  };
+	const closeUserDialog = () => {
+		setState((prev) => ({ ...prev, isUserDialogOpen: false }));
+	};
 
-  const saveUserIdAndProceed = () => {
-    const trimmed = state.tempUserId.trim();
-    if (!trimmed) return;
-    setState(prev => ({ ...prev, userId: trimmed, reportHistory: [], isUserDialogOpen: false, step: 'upload' }));
-    navigate('/report/new');
-  };
+	const saveUserIdAndProceed = () => {
+		const trimmed = state.tempUserId.trim();
+		if (!trimmed) return;
+		setState((prev) => ({
+			...prev,
+			userId: trimmed,
+			reportHistory: [],
+			isUserDialogOpen: false,
+			step: "upload",
+		}));
+		navigate("/report/new");
+	};
 
-  const handleFileUploaded = (file: File) => {
-    setState(prev => ({ ...prev, file, step: 'summary' }));
-  };
+	const handleFileUploaded = (file: File) => {
+		setState((prev) => ({ ...prev, file, step: "summary" }));
+	};
 
-  const handleAnalyze = (summary: string, analysisData?: any) => {
-    const reportId = analysisData?.reports?.report_id ?? analysisData?.report_id;
-    setState(prev => ({
-      ...prev,
-      summary,
-      analysisData: analysisData ?? null,
-      selectedReportId: reportId ?? prev.selectedReportId,
-      step: 'analysis'
-    }));
-    // 분석 응답이 정상(analysisData 존재)이고 reportId가 있으면 라우팅
-    if (analysisData) {
-      navigate(`/report/${encodeURIComponent(reportId)}`);
-    }
-  };
+	const handleAnalyze = (summary: string, analysisData?: any) => {
+		const reportId =
+			analysisData?.reports?.report_id ?? analysisData?.report_id;
+		setState((prev) => ({
+			...prev,
+			summary,
+			analysisData: analysisData ?? null,
+			selectedReportId: reportId ?? prev.selectedReportId,
+			step: "analysis",
+		}));
+		// 분석 응답이 정상(analysisData 존재)이고 reportId가 있으면 라우팅
+		if (analysisData) {
+			navigate(`/report/${encodeURIComponent(reportId)}`);
+		}
+	};
 
-  const handleNext = () => {
-    setState(prev => ({ ...prev, step: 'actions' }));
-    // 같은 경로(/report/:id) 유지, 렌더링만 NextActions로 전환
-  };
+	const handleNext = () => {
+		setState((prev) => ({ ...prev, step: "actions" }));
+		// 같은 경로(/report/:id) 유지, 렌더링만 NextActions로 전환
+	};
 
-  const handleComplete = () => {
-    const genId = () => (crypto?.randomUUID ? crypto.randomUUID() : String(Date.now()));
-    const reportId = genId();
-    const output = state.analysisData?.output ?? state.analysisData ?? {};
-    const newReport: ReportSummary = {
-      id: reportId,
-      fileName: state.file?.name ?? '알 수 없는 파일',
-      createdAt: new Date().toISOString(),
-      score: output?.score ?? output?.feedback?.score,
-      goodPoints: output?.feedback?.good_points ?? [],
-      improvementPoints: output?.feedback?.improvement_points ?? [],
-      missedPoints: output?.feedback?.missed_points ?? output?.feedback?.missed ?? [],
-      actionItems: (output?.next_actions ?? []).map((a: any, idx: number) => ({
-        id: a?.id ?? `${reportId}-ai-${idx}`,
-        title: a?.title ?? `액션 ${idx + 1}`,
-        description: a?.description ?? '',
-        priority: (a?.priority as ActionItem['priority']) ?? 'medium',
-        category: (a?.category as ActionItem['category']) ?? 'study',
-        estimatedTime: a?.estimatedTime ?? '1시간',
-        completed: false,
-      })) as ActionItem[]
-    };
-    setState(prev => ({
-      ...prev,
-      reportHistory: [newReport, ...prev.reportHistory],
-      selectedReportId: reportId,
-      step: 'history'
-    }));
-  };
+	const handleComplete = () => {
+		const genId = () =>
+			crypto?.randomUUID ? crypto.randomUUID() : String(Date.now());
+		const reportId = genId();
+		const output = state.analysisData?.output ?? state.analysisData ?? {};
+		const newReport: ReportSummary = {
+			id: reportId,
+			fileName: state.file?.name ?? "알 수 없는 파일",
+			createdAt: new Date().toISOString(),
+			score: output?.score ?? output?.feedback?.score,
+			goodPoints: output?.feedback?.good_points ?? [],
+			improvementPoints: output?.feedback?.improvement_points ?? [],
+			missedPoints:
+				output?.feedback?.missed_points ?? output?.feedback?.missed ?? [],
+			actionItems: (output?.next_actions ?? []).map((a: any, idx: number) => ({
+				id: a?.id ?? `${reportId}-ai-${idx}`,
+				title: a?.title ?? `액션 ${idx + 1}`,
+				description: a?.description ?? "",
+				priority: (a?.priority as ActionItem["priority"]) ?? "medium",
+				category: (a?.category as ActionItem["category"]) ?? "study",
+				estimatedTime: a?.estimatedTime ?? "1시간",
+				completed: false,
+			})) as ActionItem[],
+		};
+		setState((prev) => ({
+			...prev,
+			reportHistory: [newReport, ...prev.reportHistory],
+			selectedReportId: reportId,
+			step: "history",
+		}));
+	};
 
-  const showExcludedFeatures = () => {
-    setState(prev => ({ ...prev, step: 'excluded-features' }));
-  };
+	const showExcludedFeatures = () => {
+		setState((prev) => ({ ...prev, step: "excluded-features" }));
+	};
 
-  const showDesignSystem = () => {
-    setState(prev => ({ ...prev, step: 'design-system' }));
-  };
+	const showDesignSystem = () => {
+		setState((prev) => ({ ...prev, step: "design-system" }));
+	};
 
-  const showStaticScreens = () => {
-    setState(prev => ({ ...prev, step: 'static-screens' }));
-  };
+	const showStaticScreens = () => {
+		setState((prev) => ({ ...prev, step: "static-screens" }));
+	};
 
-  const showHistory = async () => {
-    if (!state.userId) return;
-    navigate('/history');
-    try {
-      const resp = await fetch(`/api/reports?user_id=${encodeURIComponent(state.userId)}`);
-      if (!resp.ok) {
-        console.error('보고서 이력 조회 실패', await resp.text());
-        setState(prev => ({ ...prev, step: 'history' }));
-        return;
-      }
-      const data = await resp.json();
-      const mapped: ReportSummary[] = Array.isArray(data)
-        ? data.map((r: any) => ({
-            id: r.id ?? r.report_id ?? String(r._id ?? ''),
-            fileName: r.file_name ?? r.fileName ?? '알 수 없는 파일',
-            createdAt: r.created_at ?? r.createdAt ?? new Date().toISOString(),
-            score: r.score ?? r.feedback?.score,
-            goodPoints: r.feedback?.good_points ?? r.good_points ?? [],
-            improvementPoints: r.feedback?.improvement_points ?? r.improvement_points ?? [],
-            missedPoints: r.feedback?.missed_points ?? r.missed_points ?? [],
-            actionItems: (r.next_actions ?? r.actionItems ?? []).map((a: any, idx: number) => ({
-              id: a?.id ?? `${r.id ?? idx}-ai-${idx}`,
-              title: a?.title ?? `액션 ${idx + 1}`,
-              description: a?.description ?? '',
-              priority: (a?.priority as ActionItem['priority']) ?? 'medium',
-              category: (a?.category as ActionItem['category']) ?? 'study',
-              estimatedTime: a?.estimatedTime ?? '1시간',
-              completed: !!a?.completed,
-            })) as ActionItem[]
-          }))
-        : [];
-      setState(prev => ({ ...prev, reportHistory: mapped, step: 'history' }));
-      
-    } catch (e) {
-      console.error('보고서 이력 조회 중 오류', e);
-      setState(prev => ({ ...prev, step: 'history' }));
-    }
-  };
+	const showHistory = async () => {
+		if (!state.userId) return;
+		navigate("/history");
+		try {
+			const resp = await fetch(
+				`/api/reports?user_id=${encodeURIComponent(state.userId)}`
+			);
+			if (!resp.ok) {
+				console.error("보고서 이력 조회 실패", await resp.text());
+				setState((prev) => ({ ...prev, step: "history" }));
+				return;
+			}
+			const data = await resp.json();
+			const mapped: ReportSummary[] = Array.isArray(data)
+				? data.map((r: any) => ({
+						id: r.id ?? r.report_id ?? String(r._id ?? ""),
+						fileName: r.file_name ?? r.fileName ?? "알 수 없는 파일",
+						createdAt: r.created_at ?? r.createdAt ?? new Date().toISOString(),
+						score: r.score ?? r.feedback?.score,
+						goodPoints: r.feedback?.good_points ?? r.good_points ?? [],
+						improvementPoints:
+							r.feedback?.improvement_points ?? r.improvement_points ?? [],
+						missedPoints: r.feedback?.missed_points ?? r.missed_points ?? [],
+						actionItems: (r.next_actions ?? r.actionItems ?? []).map(
+							(a: any, idx: number) => ({
+								id: a?.id ?? `${r.id ?? idx}-ai-${idx}`,
+								title: a?.title ?? `액션 ${idx + 1}`,
+								description: a?.description ?? "",
+								priority: (a?.priority as ActionItem["priority"]) ?? "medium",
+								category: (a?.category as ActionItem["category"]) ?? "study",
+								estimatedTime: a?.estimatedTime ?? "1시간",
+								completed: !!a?.completed,
+							})
+						) as ActionItem[],
+				  }))
+				: [];
+			setState((prev) => ({ ...prev, reportHistory: mapped, step: "history" }));
+		} catch (e) {
+			console.error("보고서 이력 조회 중 오류", e);
+			setState((prev) => ({ ...prev, step: "history" }));
+		}
+	};
 
-  const openReport = async (reportId: string) => {
-    if (!state.userId) return;
-    try {
-      navigate(`/report/${encodeURIComponent(reportId)}`);
-      const resp = await fetch(`/api/report/${encodeURIComponent(reportId)}?user_id=${encodeURIComponent(state.userId)}`);
-      if (!resp.ok) {
-        console.error('보고서 상세 조회 실패', await resp.text());
-        return;
-      }
-      const r = await resp.json();
-      const analysisLike = {
-        score: r?.score ?? r?.feedback?.score,
-        feedback: {
-          good_points: r?.feedback?.good_points ?? r?.good_points ?? [],
-          improvement_points: r?.feedback?.improvement_points ?? r?.improvement_points ?? [],
-          missed_points: r?.feedback?.missed_points ?? r?.missed_points ?? []
-        },
-        mentor_comment: r?.feedback?.mentor_comment ?? r?.mentor_comment
-      };
-      const mappedActions: ActionItem[] = (r?.next_actions ?? r?.actionItems ?? []).map((a: any, idx: number) => ({
-        id: a?.id ?? `${reportId}-ai-${idx}`,
-        title: a?.title ?? `액션 ${idx + 1}`,
-        description: a?.description ?? '',
-        priority: (a?.priority as ActionItem['priority']) ?? 'medium',
-        category: (a?.category as ActionItem['category']) ?? 'study',
-        estimatedTime: a?.estimatedTime ?? '1시간',
-        completed: !!a?.completed,
-      }));
-      setState(prev => ({
-        ...prev,
-        selectedReportId: reportId,
-        analysisData: analysisLike,
-        reportHistory: prev.reportHistory.map(rr => rr.id === reportId ? { ...rr, actionItems: mappedActions } : rr),
-        step: 'analysis'
-      }));
-    } catch (e) {
-      console.error('보고서 상세 조회 중 오류', e);
-    }
-  };
+	const openReport = async (reportId: string) => {
+		if (!state.userId) return;
+		try {
+			navigate(`/report/${encodeURIComponent(reportId)}`);
+			const resp = await fetch(
+				`/api/report/${encodeURIComponent(
+					reportId
+				)}?user_id=${encodeURIComponent(state.userId)}`
+			);
+			if (!resp.ok) {
+				console.error("보고서 상세 조회 실패", await resp.text());
+				return;
+			}
+			const r = await resp.json();
+			const analysisLike = {
+				score: r?.score ?? r?.feedback?.score,
+				feedback: {
+					good_points: r?.feedback?.good_points ?? r?.good_points ?? [],
+					improvement_points:
+						r?.feedback?.improvement_points ?? r?.improvement_points ?? [],
+					missed_points: r?.feedback?.missed_points ?? r?.missed_points ?? [],
+				},
+				mentor_comment: r?.feedback?.mentor_comment ?? r?.mentor_comment,
+			};
+			const mappedActions: ActionItem[] = (
+				r?.next_actions ??
+				r?.actionItems ??
+				[]
+			).map((a: any, idx: number) => ({
+				id: a?.id ?? `${reportId}-ai-${idx}`,
+				title: a?.title ?? `액션 ${idx + 1}`,
+				description: a?.description ?? "",
+				priority: (a?.priority as ActionItem["priority"]) ?? "medium",
+				category: (a?.category as ActionItem["category"]) ?? "study",
+				estimatedTime: a?.estimatedTime ?? "1시간",
+				completed: !!a?.completed,
+			}));
+			setState((prev) => ({
+				...prev,
+				selectedReportId: reportId,
+				analysisData: analysisLike,
+				reportHistory: prev.reportHistory.map((rr) =>
+					rr.id === reportId ? { ...rr, actionItems: mappedActions } : rr
+				),
+				step: "analysis",
+			}));
+		} catch (e) {
+			console.error("보고서 상세 조회 중 오류", e);
+		}
+	};
 
-  // URL 경로 동기화 (react-router): /report/:id 로 진입 시 해당 보고서 열기
-  const path = location.pathname;
-  if (path.startsWith('/report/') && path !== '/report/new') {
-    const id = decodeURIComponent(path.replace('/report/', ''));
-    if (state.userId && state.step !== 'analysis' && state.step !== 'actions') {
-      openReport(id);
-    }
-  }
+	// URL 경로 동기화 (react-router): /report/:id 로 진입 시 해당 보고서 열기
+	const path = location.pathname;
+	if (path.startsWith("/report/") && path !== "/report/new") {
+		const id = decodeURIComponent(path.replace("/report/", ""));
+		if (state.userId && state.step !== "analysis" && state.step !== "actions") {
+			openReport(id);
+		}
+	}
 
-  const goHome = () => {
-    navigate('/');
-  };
+	const goHome = () => {
+		navigate("/");
+	};
 
-  const handleBack = () => {
-    
-    switch (state.step) {
-      // case 'upload':
-      //   navigate('/');  
-      //   setState(prev => ({ ...prev, step: 'landing' }));
-      //   break;
-      // case 'summary':
-      //   setState(prev => ({ ...prev, step: 'upload' }));
-      //   break;
-      // case 'analysis':
-      //   setState(prev => ({ ...prev, step: 'summary' }));
-      //   break;
-      case 'actions':
-        setState(prev => ({ ...prev, step: 'analysis' }));
-        break;
-      case 'excluded-features':
-      case 'design-system':
-      case 'static-screens':
-        setState(prev => ({ ...prev, step: 'landing' }));
-        break;
-      default:
-        navigate(-1);
-        break;
-    }
-  };
+	const handleBack = () => {
+		switch (state.step) {
+			// case 'upload':
+			//   navigate('/');
+			//   setState(prev => ({ ...prev, step: 'landing' }));
+			//   break;
+			// case 'summary':
+			//   setState(prev => ({ ...prev, step: 'upload' }));
+			//   break;
+			// case 'analysis':
+			//   setState(prev => ({ ...prev, step: 'summary' }));
+			//   break;
+			case "actions":
+				setState((prev) => ({ ...prev, step: "analysis" }));
+				break;
+			case "excluded-features":
+			case "design-system":
+			case "static-screens":
+				setState((prev) => ({ ...prev, step: "landing" }));
+				break;
+			default:
+				navigate(-1);
+				break;
+		}
+	};
 
-  // User mode controls
-  const useAsGuest = () => {
-    setState(prev => ({ ...prev, userId: null, reportHistory: [] }));
-  };
+	// User mode controls
+	const useAsGuest = () => {
+		setState((prev) => ({ ...prev, userId: null, reportHistory: [] }));
+	};
 
-  const promptUserId = () => {
-    const entered = window.prompt('user_id를 입력하세요 (예: user_123)', state.userId ?? '');
-    if (entered !== null) {
-      const trimmed = entered.trim();
-      setState(prev => ({ ...prev, userId: trimmed || null, reportHistory: [] }));
-    }
-  };
+	const promptUserId = () => {
+		const entered = window.prompt(
+			"user_id를 입력하세요 (예: user_123)",
+			state.userId ?? ""
+		);
+		if (entered !== null) {
+			const trimmed = entered.trim();
+			setState((prev) => ({
+				...prev,
+				userId: trimmed || null,
+				reportHistory: [],
+			}));
+		}
+	};
 
-  const renderCurrentStep = () => {
-    switch (state.step) {
-      case 'landing':
-        return <Landing onGetStarted={handleGetStarted} onChooseGuest={handleChooseGuest} onChooseUser={handleChooseUser} />;
-      case 'upload':
-        return <DocumentUpload onFileUploaded={handleFileUploaded} onBack={handleBack} />;
-      case 'summary':
-        return (
-          <UnderstandingSummary
-            file={state.file!}
-            onAnalyze={handleAnalyze}
-            onBack={handleBack}
-          />
-        );
-      case 'analysis':
-        return (
-          <AnalysisResult
-            file={state.file!}
-            summary={state.summary}
-            analysis={state.analysisData}
-            onNext={handleNext}
-            onBack={handleBack}
-          />
-        );
-      case 'actions':
-        return (
-          <NextActions
-            onBack={handleBack}
-            onComplete={handleComplete}
-            items={state.selectedReportId ? state.reportHistory.find(r => r.id === state.selectedReportId)?.actionItems : undefined}
-          />
-        );
-      case 'history':
-        return (
-          <ReportHistory
-            reports={state.reportHistory}
-            onBack={handleBack}
-            onOpen={openReport}
-          />
-        );
-      case 'excluded-features':
-        return <ExcludedFeatures onBack={handleBack} />;
-      case 'design-system':
-        return <DesignSystem />;
-      case 'static-screens':
-        return <StaticScreens />;
-      default:
-        return <Landing onGetStarted={handleGetStarted} onChooseGuest={handleChooseGuest} onChooseUser={handleChooseUser} />;
-    }
-  };
+	const renderCurrentStep = () => {
+		switch (state.step) {
+			case "landing":
+				return (
+					<Landing
+						onGetStarted={handleGetStarted}
+						onChooseGuest={handleChooseGuest}
+						onChooseUser={handleChooseUser}
+					/>
+				);
+			case "upload":
+				return (
+					<DocumentUpload
+						onFileUploaded={handleFileUploaded}
+						onBack={handleBack}
+					/>
+				);
+			case "summary":
+				return (
+					<UnderstandingSummary
+						user_id={state.userId}
+						file={state.file!}
+						onAnalyze={handleAnalyze}
+						onBack={handleBack}
+					/>
+				);
+			case "analysis":
+				return (
+					<AnalysisResult
+						file={state.file!}
+						summary={state.summary}
+						analysis={state.analysisData}
+						onNext={handleNext}
+						onBack={handleBack}
+					/>
+				);
+			case "actions":
+				return (
+					<NextActions
+						onBack={handleBack}
+						onComplete={handleComplete}
+						items={
+							state.selectedReportId
+								? state.reportHistory.find(
+										(r) => r.id === state.selectedReportId
+								  )?.actionItems
+								: undefined
+						}
+					/>
+				);
+			case "history":
+				return (
+					<ReportHistory
+						reports={state.reportHistory}
+						onBack={handleBack}
+						onOpen={openReport}
+					/>
+				);
+			case "excluded-features":
+				return <ExcludedFeatures onBack={handleBack} />;
+			case "design-system":
+				return <DesignSystem />;
+			case "static-screens":
+				return <StaticScreens />;
+			default:
+				return (
+					<Landing
+						onGetStarted={handleGetStarted}
+						onChooseGuest={handleChooseGuest}
+						onChooseUser={handleChooseUser}
+					/>
+				);
+		}
+	};
 
-  return (
-    <div className="min-h-screen bg-background">
-      {/* Top Navigation */}
-      {state.step !== 'landing' && (
-        <nav className="border-b border-border sticky top-0 bg-background/80 backdrop-blur-sm z-40">
-          <div className="container mx-auto px-4">
-            <div className="flex items-center justify-between h-16">
-              <div className="flex items-center gap-3">
-                <button onClick={goHome} className="text-xl font-bold text-primary hover:opacity-80 transition-opacity">
-                  JobMate AI
-                </button>
-                <div className="w-1 h-1 bg-primary rounded-full"></div>
-                <span className="text-sm text-muted-foreground">
-                  {state.step === 'upload' && '문서 업로드'}
-                  {state.step === 'summary' && '이해도 요약'}
-                  {state.step === 'analysis' && '분석 결과'}
-                  {state.step === 'actions' && '액션 플랜'}
-                  {state.step === 'history' && '보고서 이력'}
-                  {state.step === 'excluded-features' && '향후 기능'}
-                  {state.step === 'design-system' && '디자인 시스템'}
-                  {state.step === 'static-screens' && '정적 화면'}
-                </span>
-              </div>
-              
-              <div className="flex items-center gap-2">
-                <Button variant="outline" size="sm" onClick={promptUserId}>
-                  {state.userId ? `사용자: ${state.userId}` : '게스트 모드'}
-                </Button>
-                {state.userId && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={showHistory}
-                  >
-                    보고서 이력
-                  </Button>
-                )}
-                {(state.step === 'design-system' || state.step === 'static-screens') && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={handleBack}
-                  >
-                    ← 돌아가기
-                  </Button>
-                )}
-                <Button variant="ghost" size="sm">
-                  <Settings className="w-4 h-4" />
-                </Button>
-              </div>
-            </div>
-          </div>
-        </nav>
-      )}
+	return (
+		<div className="min-h-screen bg-background">
+			{/* Top Navigation */}
+			{state.step !== "landing" && (
+				<nav className="border-b border-border sticky top-0 bg-background/80 backdrop-blur-sm z-40">
+					<div className="container mx-auto px-4">
+						<div className="flex items-center justify-between h-16">
+							<div className="flex items-center gap-3">
+								<button
+									onClick={goHome}
+									className="text-xl font-bold text-primary hover:opacity-80 transition-opacity"
+								>
+									JobMate AI
+								</button>
+								<div className="w-1 h-1 bg-primary rounded-full"></div>
+								<span className="text-sm text-muted-foreground">
+									{state.step === "upload" && "문서 업로드"}
+									{state.step === "summary" && "이해도 요약"}
+									{state.step === "analysis" && "분석 결과"}
+									{state.step === "actions" && "액션 플랜"}
+									{state.step === "history" && "보고서 이력"}
+									{state.step === "excluded-features" && "향후 기능"}
+									{state.step === "design-system" && "디자인 시스템"}
+									{state.step === "static-screens" && "정적 화면"}
+								</span>
+							</div>
 
-      {/* Design System Navigation for Landing */}
-      {state.step === 'landing' && (
-        <div className="fixed top-6 right-6 flex flex-col gap-3 z-50">
+							<div className="flex items-center gap-2">
+								<Button variant="outline" size="sm" onClick={promptUserId}>
+									{state.userId ? `사용자: ${state.userId}` : "게스트 모드"}
+								</Button>
+								{state.userId && (
+									<Button variant="ghost" size="sm" onClick={showHistory}>
+										보고서 이력
+									</Button>
+								)}
+								{(state.step === "design-system" ||
+									state.step === "static-screens") && (
+									<Button variant="ghost" size="sm" onClick={handleBack}>
+										← 돌아가기
+									</Button>
+								)}
+								<Button variant="ghost" size="sm">
+									<Settings className="w-4 h-4" />
+								</Button>
+							</div>
+						</div>
+					</div>
+				</nav>
+			)}
 
-          {state.userId && (
-            <Button
-              onClick={showHistory}
-              className="rounded-full h-14 w-14 bg-muted hover:bg-muted/90 text-foreground shadow-lg"
-              size="sm"
-            >
-              📚
-            </Button>
-          )}
-          <Button
-            onClick={showDesignSystem}
-            className="rounded-full h-14 w-14 bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg"
-            size="sm"
-          >
-            <Palette className="w-6 h-6" />
-          </Button>
-          <Button
-            onClick={showStaticScreens}
-            className="rounded-full h-14 w-14 bg-secondary hover:bg-secondary/90 text-secondary-foreground shadow-lg"
-            size="sm"
-          >
-            <Monitor className="w-6 h-6" />
-          </Button>
-          <Button
-            onClick={showExcludedFeatures}
-            className="rounded-full h-14 w-14 bg-accent hover:bg-accent/90 text-accent-foreground shadow-lg"
-            size="sm"
-          >
-            <Zap className="w-6 h-6" />
-          </Button>
-        </div>
-      )}
+			{/* Design System Navigation for Landing */}
+			{state.step === "landing" && (
+				<div className="fixed top-6 right-6 flex flex-col gap-3 z-50">
+					{state.userId && (
+						<Button
+							onClick={showHistory}
+							className="rounded-full h-14 w-14 bg-muted hover:bg-muted/90 text-foreground shadow-lg"
+							size="sm"
+						>
+							📚
+						</Button>
+					)}
+					<Button
+						onClick={showDesignSystem}
+						className="rounded-full h-14 w-14 bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg"
+						size="sm"
+					>
+						<Palette className="w-6 h-6" />
+					</Button>
+					<Button
+						onClick={showStaticScreens}
+						className="rounded-full h-14 w-14 bg-secondary hover:bg-secondary/90 text-secondary-foreground shadow-lg"
+						size="sm"
+					>
+						<Monitor className="w-6 h-6" />
+					</Button>
+					<Button
+						onClick={showExcludedFeatures}
+						className="rounded-full h-14 w-14 bg-accent hover:bg-accent/90 text-accent-foreground shadow-lg"
+						size="sm"
+					>
+						<Zap className="w-6 h-6" />
+					</Button>
+				</div>
+			)}
 
-      {/* Main Content */}
-      <main className="relative">
-        <Routes>
-          <Route path="/" element={<Landing onGetStarted={handleGetStarted} onChooseGuest={handleChooseGuest} onChooseUser={handleChooseUser} />} />
-          <Route path="/report/new" element={
-            state.step === 'summary' ? (
-              <UnderstandingSummary file={state.file!} onAnalyze={handleAnalyze} onBack={handleBack} />
-            ) : state.step === 'upload' ? (
-              <DocumentUpload onFileUploaded={handleFileUploaded} onBack={handleBack} />
-            ) : (
-              <DocumentUpload onFileUploaded={handleFileUploaded} onBack={handleBack} />
-            )
-          } />
-          <Route
-            path="/report/:reportId"
-            element={
-              state.step === 'actions' ? (
-                <NextActions
-                  onBack={handleBack}
-                  onComplete={handleComplete}
-                  items={
-                    state.selectedReportId
-                      ? state.reportHistory.find(r => r.id === state.selectedReportId)?.actionItems
-                      : (state.analysisData?.next_actions ?? [])
-                  }
-                />
-              ) : (
-                <AnalysisResult
-                  file={state.file!}
-                  summary={state.summary}
-                  analysis={state.analysisData}
-                  onNext={handleNext}
-                  onBack={handleBack}
-                />
-              )
-            }
-          />
-          <Route path="/history" element={<ReportHistory reports={state.reportHistory} onBack={handleBack} onOpen={openReport} />} />
-          <Route path="*" element={<Landing onGetStarted={handleGetStarted} onChooseGuest={handleChooseGuest} onChooseUser={handleChooseUser} />} />
-        </Routes>
-      </main>
+			{/* Main Content */}
+			<main className="relative">
+				<Routes>
+					<Route
+						path="/"
+						element={
+							<Landing
+								onGetStarted={handleGetStarted}
+								onChooseGuest={handleChooseGuest}
+								onChooseUser={handleChooseUser}
+							/>
+						}
+					/>
+					<Route
+						path="/report/new"
+						element={
+							state.step === "summary" ? (
+								<UnderstandingSummary
+									user_id={state.userId}
+									file={state.file!}
+									onAnalyze={handleAnalyze}
+									onBack={handleBack}
+								/>
+							) : state.step === "upload" ? (
+								<DocumentUpload
+									onFileUploaded={handleFileUploaded}
+									onBack={handleBack}
+								/>
+							) : (
+								<DocumentUpload
+									onFileUploaded={handleFileUploaded}
+									onBack={handleBack}
+								/>
+							)
+						}
+					/>
+					<Route
+						path="/report/:reportId"
+						element={
+							state.step === "actions" ? (
+								<NextActions
+									onBack={handleBack}
+									onComplete={handleComplete}
+									items={
+										state.selectedReportId
+											? state.reportHistory.find(
+													(r) => r.id === state.selectedReportId
+											  )?.actionItems
+											: state.analysisData?.next_actions ?? []
+									}
+								/>
+							) : (
+								<AnalysisResult
+									file={state.file!}
+									summary={state.summary}
+									analysis={state.analysisData}
+									onNext={handleNext}
+									onBack={handleBack}
+								/>
+							)
+						}
+					/>
+					<Route
+						path="/history"
+						element={
+							<ReportHistory
+								reports={state.reportHistory}
+								onBack={handleBack}
+								onOpen={openReport}
+							/>
+						}
+					/>
+					<Route
+						path="*"
+						element={
+							<Landing
+								onGetStarted={handleGetStarted}
+								onChooseGuest={handleChooseGuest}
+								onChooseUser={handleChooseUser}
+							/>
+						}
+					/>
+				</Routes>
+			</main>
 
-      {/* Progress Indicator */}
-      {state.step !== 'landing' && state.step !== 'excluded-features' && state.step !== 'design-system' && state.step !== 'static-screens' && state.step !== 'history' && (
-        <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 bg-background border border-border rounded-full px-4 py-2 shadow-lg z-50">
-          <div className="flex items-center gap-2">
-            {['upload', 'summary', 'analysis', 'actions'].map((step, index) => (
-              <div
-                key={step}
-                className={`w-2 h-2 rounded-full transition-all ${
-                  state.step === step
-                    ? 'bg-primary w-6'
-                    : ['upload', 'summary', 'analysis', 'actions'].indexOf(state.step) > index
-                    ? 'bg-primary'
-                    : 'bg-muted'
-                }`}
-              />
-            ))}
-          </div>
-        </div>
-      )}
+			{/* Progress Indicator */}
+			{state.step !== "landing" &&
+				state.step !== "excluded-features" &&
+				state.step !== "design-system" &&
+				state.step !== "static-screens" &&
+				state.step !== "history" && (
+					<div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 bg-background border border-border rounded-full px-4 py-2 shadow-lg z-50">
+						<div className="flex items-center gap-2">
+							{["upload", "summary", "analysis", "actions"].map(
+								(step, index) => (
+									<div
+										key={step}
+										className={`w-2 h-2 rounded-full transition-all ${
+											state.step === step
+												? "bg-primary w-6"
+												: ["upload", "summary", "analysis", "actions"].indexOf(
+														state.step
+												  ) > index
+												? "bg-primary"
+												: "bg-muted"
+										}`}
+									/>
+								)
+							)}
+						</div>
+					</div>
+				)}
 
-      {/* User ID Dialog */}
-      <Dialog open={state.isUserDialogOpen} onOpenChange={(open) => setState(prev => ({ ...prev, isUserDialogOpen: open }))}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>계정 연동하기</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-2">
-            <label className="text-sm text-muted-foreground">user_id</label>
-            <Input
-              placeholder="예: user_123"
-              value={state.tempUserId}
-              onChange={(e) => setState(prev => ({ ...prev, tempUserId: e.target.value }))}
-            />
-          </div>
-          <DialogFooter>
-            <Button variant="ghost" onClick={closeUserDialog}>취소</Button>
-            <Button onClick={saveUserIdAndProceed} disabled={!state.tempUserId.trim()}>연동하고 시작</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    </div>
-  );
+			{/* User ID Dialog */}
+			<Dialog
+				open={state.isUserDialogOpen}
+				onOpenChange={(open) =>
+					setState((prev) => ({ ...prev, isUserDialogOpen: open }))
+				}
+			>
+				<DialogContent>
+					<DialogHeader>
+						<DialogTitle>계정 연동하기</DialogTitle>
+					</DialogHeader>
+					<div className="space-y-2">
+						<label className="text-sm text-muted-foreground">user_id</label>
+						<Input
+							placeholder="예: user_123"
+							value={state.tempUserId}
+							onChange={(e) =>
+								setState((prev) => ({ ...prev, tempUserId: e.target.value }))
+							}
+						/>
+					</div>
+					<DialogFooter>
+						<Button variant="ghost" onClick={closeUserDialog}>
+							취소
+						</Button>
+						<Button
+							onClick={saveUserIdAndProceed}
+							disabled={!state.tempUserId.trim()}
+						>
+							연동하고 시작
+						</Button>
+					</DialogFooter>
+				</DialogContent>
+			</Dialog>
+		</div>
+	);
 }
