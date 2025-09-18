@@ -29,6 +29,17 @@ interface Question {
   category: string;
 }
 
+
+interface NextAction {
+  id: string,
+  title: string,
+  description: string, 
+  category: string,
+  estimatedTime: string
+  completed: boolean
+  priority: string
+}
+
 export function AnalysisResult({ file, summary, analysis, onNext, onBack }: AnalysisResultProps) {
   const [comprehensionScore, setComprehensionScore] = useState(0);
   const [isQuestionsOpen, setIsQuestionsOpen] = useState(false);
@@ -43,29 +54,12 @@ export function AnalysisResult({ file, summary, analysis, onNext, onBack }: Anal
     const improvementPoints: string[] = output?.feedback?.improvement_points ?? [];
     const missedPoints: string[] = output?.feedback?.missed_points ?? output?.feedback?.missed ?? [];
     const mentorComment: string = output?.feedback?.mentor_comment ?? output?.mentor_comment ?? '';
-    return { score, goodPoints, improvementPoints, missedPoints, mentorComment };
+    const questions: Question[] = output?.suggested_questions ?? [];
+    const nextActions: Question[] = output?.next_actions ?? [];
+    
+    return { score, goodPoints, improvementPoints, missedPoints, mentorComment, questions, nextActions };
   })();
 
-  const questions: Question[] = [
-    {
-      id: '1',
-      question: '프로젝트에서 가장 중요한 성공 요인은 무엇인가요?',
-      importance: 'high',
-      category: '핵심 개념'
-    },
-    {
-      id: '2',
-      question: '팀 간 의사소통 프로세스는 어떻게 구성되어 있나요?',
-      importance: 'high',
-      category: '프로세스'
-    },
-    {
-      id: '3',
-      question: '리스크가 발생했을 때 어떤 단계를 거쳐 해결하나요?',
-      importance: 'medium',
-      category: '리스크 관리'
-    }
-  ];
 
   useEffect(() => {
     
@@ -81,7 +75,7 @@ export function AnalysisResult({ file, summary, analysis, onNext, onBack }: Anal
       });
     }, 50);
     return () => clearInterval(timer);
-    
+
   }, [analysis]);
 
   const getFeedbackIcon = (type: FeedbackItem['type']) => {
@@ -243,7 +237,7 @@ export function AnalysisResult({ file, summary, analysis, onNext, onBack }: Anal
               </CollapsibleTrigger>
               <CollapsibleContent>
                 <div className="px-6 pb-6 space-y-4">
-                  {questions.map((question) => (
+                  {mapped.questions.map((question) => (
                     <div key={question.id} className="flex items-start gap-4 p-4 bg-muted/30 rounded-lg">
                       <Target className="w-5 h-5 text-primary mt-0.5" />
                       <div className="flex-1">

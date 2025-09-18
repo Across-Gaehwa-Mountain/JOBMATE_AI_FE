@@ -89,11 +89,7 @@ export default function App() {
   };
 
   const handleAnalyze = (summary: string, analysisData?: any) => {
-    console.log(analysisData);
     const reportId = analysisData?.reports?.report_id ?? analysisData?.report_id;
-    if (reportId) {
-      navigate(`/report/${encodeURIComponent(reportId)}`);
-    }
     setState(prev => ({
       ...prev,
       summary,
@@ -101,10 +97,15 @@ export default function App() {
       selectedReportId: reportId ?? prev.selectedReportId,
       step: 'analysis'
     }));
+    // 분석 응답이 정상(analysisData 존재)이고 reportId가 있으면 라우팅
+    if (analysisData) {
+      navigate(`/report/${encodeURIComponent(reportId)}`);
+    }
   };
 
   const handleNext = () => {
     setState(prev => ({ ...prev, step: 'actions' }));
+    // 같은 경로(/report/:id) 유지, 렌더링만 NextActions로 전환
   };
 
   const handleComplete = () => {
@@ -232,28 +233,28 @@ export default function App() {
   const path = location.pathname;
   if (path.startsWith('/report/') && path !== '/report/new') {
     const id = decodeURIComponent(path.replace('/report/', ''));
-    if (state.userId && state.step !== 'analysis') {
+    if (state.userId && state.step !== 'analysis' && state.step !== 'actions') {
       openReport(id);
     }
   }
 
   const goHome = () => {
-    setState(prev => ({ ...prev, step: 'landing' }));
     navigate('/');
   };
 
   const handleBack = () => {
+    
     switch (state.step) {
-      case 'upload':
-        navigate('/');  
-        setState(prev => ({ ...prev, step: 'landing' }));
-        break;
-      case 'summary':
-        setState(prev => ({ ...prev, step: 'upload' }));
-        break;
-      case 'analysis':
-        setState(prev => ({ ...prev, step: 'summary' }));
-        break;
+      // case 'upload':
+      //   navigate('/');  
+      //   setState(prev => ({ ...prev, step: 'landing' }));
+      //   break;
+      // case 'summary':
+      //   setState(prev => ({ ...prev, step: 'upload' }));
+      //   break;
+      // case 'analysis':
+      //   setState(prev => ({ ...prev, step: 'summary' }));
+      //   break;
       case 'actions':
         setState(prev => ({ ...prev, step: 'analysis' }));
         break;
@@ -261,6 +262,9 @@ export default function App() {
       case 'design-system':
       case 'static-screens':
         setState(prev => ({ ...prev, step: 'landing' }));
+        break;
+      default:
+        navigate(-1);
         break;
     }
   };
@@ -434,7 +438,30 @@ export default function App() {
               <DocumentUpload onFileUploaded={handleFileUploaded} onBack={handleBack} />
             )
           } />
-          <Route path="/report/:reportId" element={<AnalysisResult file={state.file!} summary={state.summary} analysis={state.analysisData} onNext={handleNext} onBack={handleBack} />} />
+          <Route
+            path="/report/:reportId"
+            element={
+              state.step === 'actions' ? (
+                <NextActions
+                  onBack={handleBack}
+                  onComplete={handleComplete}
+                  items={
+                    state.selectedReportId
+                      ? state.reportHistory.find(r => r.id === state.selectedReportId)?.actionItems
+                      : (state.analysisData?.next_actions ?? [])
+                  }
+                />
+              ) : (
+                <AnalysisResult
+                  file={state.file!}
+                  summary={state.summary}
+                  analysis={state.analysisData}
+                  onNext={handleNext}
+                  onBack={handleBack}
+                />
+              )
+            }
+          />
           <Route path="/history" element={<ReportHistory reports={state.reportHistory} onBack={handleBack} onOpen={openReport} />} />
           <Route path="*" element={<Landing onGetStarted={handleGetStarted} onChooseGuest={handleChooseGuest} onChooseUser={handleChooseUser} />} />
         </Routes>

@@ -22,53 +22,8 @@ export interface ActionItem {
 }
 
 export function NextActions({ onBack, onComplete, items }: NextActionsProps) {
-  const [actionItems, setActionItems] = useState<ActionItem[]>(items ?? [
-    {
-      id: '1',
-      title: '프로젝트 관리 도구 학습',
-      description: '문서에서 언급된 프로젝트 관리 도구들의 사용법을 익히고 실제 업무에 적용해보세요.',
-      priority: 'high',
-      category: 'study',
-      estimatedTime: '2-3시간',
-      completed: false
-    },
-    {
-      id: '2',
-      title: '팀 미팅 전 체크리스트 작성',
-      description: '다음 팀 미팅에서 논의할 리스크 관리 방안과 질문사항을 정리해주세요.',
-      priority: 'high',
-      category: 'preparation',
-      estimatedTime: '30분',
-      completed: false
-    },
-    {
-      id: '3',
-      title: '리스크 관리 계획 수립',
-      description: '현재 진행 중인 프로젝트의 잠재적 리스크를 식별하고 대응 방안을 구체화하세요.',
-      priority: 'medium',
-      category: 'practice',
-      estimatedTime: '1-2시간',
-      completed: false
-    },
-    {
-      id: '4',
-      title: '관련 문서 추가 검토',
-      description: '프로젝트 관리 관련 추가 문서들을 읽고 이해도를 보완해주세요.',
-      priority: 'medium',
-      category: 'study',
-      estimatedTime: '1시간',
-      completed: false
-    },
-    {
-      id: '5',
-      title: '동료와 개념 논의',
-      description: '이해한 개념들을 동료들과 공유하고 피드백을 받아보세요.',
-      priority: 'low',
-      category: 'meeting',
-      estimatedTime: '45분',
-      completed: false
-    }
-  ]);
+  console.log(items);
+  const [actionItems, setActionItems] = useState<ActionItem[]>(items ?? []);
 
   const toggleActionItem = (id: string) => {
     setActionItems(prev => 
@@ -137,7 +92,7 @@ export function NextActions({ onBack, onComplete, items }: NextActionsProps) {
           <Button variant="ghost" onClick={onBack} className="mb-4">
             ← 돌아가기
           </Button>
-          <h1 className="text-3xl font-bold text-foreground mb-2">다음 액션 계획</h1>
+          <h1 className="text-3xl font-bold text-foreground mb-2">액션 플랜</h1>
           <p className="text-muted-foreground">분석 결과를 바탕으로 제안된 구체적인 행동 계획입니다.</p>
         </div>
 
@@ -163,7 +118,7 @@ export function NextActions({ onBack, onComplete, items }: NextActionsProps) {
           <Card className="p-6 bg-primary/5 border-primary/20">
             <div className="flex items-center gap-3 mb-4">
               <Calendar className="w-6 h-6 text-primary" />
-              <h3 className="font-semibold text-primary">미팅 전 중요 준비사항</h3>
+              <h3 className="font-semibold text-primary">중요도 높은 액션 아이템</h3>
             </div>
             <div className="space-y-3">
               {actionItems
@@ -239,45 +194,6 @@ export function NextActions({ onBack, onComplete, items }: NextActionsProps) {
               ))}
             </div>
           </Card>
-
-          {/* Add Custom Action */}
-          <Card className="p-6 border-dashed border-2 border-muted-foreground/20 hover:border-primary/50 transition-colors cursor-pointer">
-            <div className="text-center">
-              <Plus className="w-8 h-8 text-muted-foreground mx-auto mb-3" />
-              <h4 className="font-medium text-muted-foreground mb-1">커스텀 액션 추가</h4>
-              <p className="text-sm text-muted-foreground">
-                개인적으로 필요한 추가 액션을 등록해보세요
-              </p>
-            </div>
-          </Card>
-
-          {/* Save Actions */}
-          <Card className="p-6 bg-secondary/5 border-secondary/20">
-            <div className="flex items-center justify-between">
-              <div>
-                <h4 className="font-semibold text-secondary mb-2">액션 플랜 저장</h4>
-                <p className="text-sm text-muted-foreground">
-                  이 액션 플랜을 내 할 일 목록에 추가하고 진행상황을 추적하세요
-                </p>
-              </div>
-              <Button className="bg-secondary hover:bg-secondary/90">
-                내 할 일로 저장
-              </Button>
-            </div>
-          </Card>
-
-          {/* Complete */}
-          <div className="flex justify-between items-center pt-6">
-            <p className="text-muted-foreground">
-              모든 액션을 완료하면 문서 이해도가 크게 향상됩니다
-            </p>
-            <Button 
-              onClick={onComplete}
-              className="bg-primary hover:bg-primary/90"
-            >
-              분석 완료 <ArrowRight className="ml-2 w-4 h-4" />
-            </Button>
-          </div>
         </div>
       </div>
     </div>
