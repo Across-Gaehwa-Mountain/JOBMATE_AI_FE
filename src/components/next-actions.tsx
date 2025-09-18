@@ -5,12 +5,13 @@ import { Card } from "./ui/card";
 import { Badge } from "./ui/badge";
 import { Checkbox } from "./ui/checkbox";
 
-interface NextActionsProps {
+export interface NextActionsProps {
   onBack: () => void;
   onComplete: () => void;
+  items?: ActionItem[];
 }
 
-interface ActionItem {
+export interface ActionItem {
   id: string;
   title: string;
   description: string;
@@ -20,8 +21,8 @@ interface ActionItem {
   completed: boolean;
 }
 
-export function NextActions({ onBack, onComplete }: NextActionsProps) {
-  const [actionItems, setActionItems] = useState<ActionItem[]>([
+export function NextActions({ onBack, onComplete, items }: NextActionsProps) {
+  const [actionItems, setActionItems] = useState<ActionItem[]>(items ?? [
     {
       id: '1',
       title: '프로젝트 관리 도구 학습',

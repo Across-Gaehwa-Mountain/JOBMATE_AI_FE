@@ -4,9 +4,11 @@ import { Card } from "./ui/card";
 
 interface LandingProps {
   onGetStarted: () => void;
+  onChooseGuest: () => void;
+  onChooseUser: () => void;
 }
 
-export function Landing({ onGetStarted }: LandingProps) {
+export function Landing({ onGetStarted, onChooseGuest, onChooseUser }: LandingProps) {
   const features = [
     {
       icon: <FileText className="w-12 h-12 text-primary" />,
@@ -40,17 +42,27 @@ export function Landing({ onGetStarted }: LandingProps) {
           </h2>
           
           <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto leading-relaxed">
-            AI 기반 문서 분석과 이해도 측정으로 업무 효율성을 높이고, 
+            AI 기반 문서 분석과 이해도 측정으로 업무 효율성을 높이고, <br/>
             중요한 내용을 놓치지 않도록 도와드립니다.
           </p>
           
-          <Button 
-            onClick={onGetStarted}
-            size="lg"
-            className="bg-primary hover:bg-primary/90 text-primary-foreground px-8 py-4 rounded-lg transition-all duration-200 transform hover:scale-105"
-          >
-            시작하기 <ArrowRight className="ml-2 w-5 h-5" />
-          </Button>
+          <div className="flex items-center justify-center gap-3">
+            <Button 
+              onClick={onChooseUser}
+              size="lg"
+              className="bg-primary hover:bg-primary/90 text-primary-foreground px-6 py-4 rounded-lg transition-all duration-200"
+            >
+              계정 연동하기
+            </Button>
+            <Button 
+              onClick={onChooseGuest}
+              size="lg"
+              variant="outline"
+              className="px-6 py-4 rounded-lg"
+            >
+              비회원으로 이용하기 <ArrowRight className="ml-2 w-5 h-5" />
+            </Button>
+          </div>
         </div>
 
         {/* Features Section */}
