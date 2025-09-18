@@ -195,31 +195,38 @@ export default function App() {
 				setState((prev) => ({ ...prev, step: "history" }));
 				return;
 			}
-			const data = await resp.json();
-			const mapped: ReportSummary[] = Array.isArray(data)
-				? data.map((r: any) => ({
-						id: r.id ?? r.report_id ?? String(r._id ?? ""),
-						fileName: r.file_name ?? r.fileName ?? "알 수 없는 파일",
-						createdAt: r.created_at ?? r.createdAt ?? new Date().toISOString(),
-						score: r.score ?? r.feedback?.score,
-						goodPoints: r.feedback?.good_points ?? r.good_points ?? [],
-						improvementPoints:
-							r.feedback?.improvement_points ?? r.improvement_points ?? [],
-						missedPoints: r.feedback?.missed_points ?? r.missed_points ?? [],
-						actionItems: (r.next_actions ?? r.actionItems ?? []).map(
-							(a: any, idx: number) => ({
-								id: a?.id ?? `${r.id ?? idx}-ai-${idx}`,
-								title: a?.title ?? `액션 ${idx + 1}`,
-								description: a?.description ?? "",
-								priority: (a?.priority as ActionItem["priority"]) ?? "medium",
-								category: (a?.category as ActionItem["category"]) ?? "study",
-								estimatedTime: a?.estimatedTime ?? "1시간",
-								completed: !!a?.completed,
-							})
-						) as ActionItem[],
-				  }))
-				: [];
-			setState((prev) => ({ ...prev, reportHistory: mapped, step: "history" }));
+      const data = await resp.json();
+      // reports 배열 안전 추출
+      const list = Array.isArray(data) ? data : (Array.isArray(data?.reports) ? data.reports : []);
+      
+      const mapped: ReportSummary[] = list.map((r: any, idx: number) => {
+        const analysis = r.analysis_result ?? r.analysis ?? {};
+        const feedback = analysis.feedback ?? {};
+        const fileNameFromAnalysis = Array.isArray(analysis.file_analysis)
+          ? analysis.file_analysis[0]?.file_name
+          : undefined;
+      
+        return {
+          id: r.report_id ?? r.id ?? String(r._id ?? idx),
+          fileName: r.file_name ?? r.fileName ?? fileNameFromAnalysis ?? '알 수 없는 파일',
+          createdAt: r.creation_datetime ?? r.created_at ?? r.createdAt ?? new Date().toISOString(),
+          score: analysis.score ?? feedback.score,
+          goodPoints: feedback.good_points ?? [],
+          improvementPoints: feedback.improvement_points ?? [],
+          missedPoints: feedback.missed_points ?? [],
+          actionItems: (analysis.next_actions ?? r.next_actions ?? r.actionItems ?? []).map((a: any, aIdx: number) => ({
+            id: a?.id ?? `${r.report_id ?? r.id ?? idx}-ai-${aIdx}`,
+            title: a?.title ?? `액션 ${aIdx + 1}`,
+            description: a?.description ?? '',
+            priority: (a?.priority as ActionItem['priority']) ?? 'medium',
+            category: (a?.category as ActionItem['category']) ?? 'study',
+            estimatedTime: a?.estimatedTime ?? '1시간',
+            completed: !!a?.completed,
+          })),
+        } as ReportSummary;
+      });
+      
+      setState(prev => ({ ...prev, reportHistory: mapped, step: 'history' }));
 		} catch (e) {
 			console.error("보고서 이력 조회 중 오류", e);
 			setState((prev) => ({ ...prev, step: "history" }));
@@ -240,29 +247,32 @@ export default function App() {
 				return;
 			}
 			const r = await resp.json();
-			const analysisLike = {
-				score: r?.score ?? r?.feedback?.score,
-				feedback: {
-					good_points: r?.feedback?.good_points ?? r?.good_points ?? [],
-					improvement_points:
-						r?.feedback?.improvement_points ?? r?.improvement_points ?? [],
-					missed_points: r?.feedback?.missed_points ?? r?.missed_points ?? [],
-				},
-				mentor_comment: r?.feedback?.mentor_comment ?? r?.mentor_comment,
-			};
-			const mappedActions: ActionItem[] = (
-				r?.next_actions ??
-				r?.actionItems ??
-				[]
-			).map((a: any, idx: number) => ({
-				id: a?.id ?? `${reportId}-ai-${idx}`,
-				title: a?.title ?? `액션 ${idx + 1}`,
-				description: a?.description ?? "",
-				priority: (a?.priority as ActionItem["priority"]) ?? "medium",
-				category: (a?.category as ActionItem["category"]) ?? "study",
-				estimatedTime: a?.estimatedTime ?? "1시간",
-				completed: !!a?.completed,
-			}));
+      const ar = r.analysis_result.analysis_result ?? {};
+      console.log(ar)
+      const fb = ar.feedback ?? {};
+
+      const analysisLike = {
+        score: ar.score ?? fb.score,
+        feedback: {
+          good_points: fb.good_points ?? [],
+          improvement_points: fb.improvement_points ?? [],
+          missed_points: fb.missed_points ?? []
+        },
+        mentor_comment: fb.mentor_comment,
+        reasoning_summary: fb.reasoning_summary,
+        suggested_questions: ar.suggested_questions,
+        next_actions: ar.next_actions
+      };
+
+      const mappedActions: ActionItem[] = (ar.next_actions ?? []).map((a: any, i: number) => ({
+        id: a?.id ?? `${r.report_id}-ai-${i}`,
+        title: a?.title ?? `액션 ${i + 1}`,
+        description: a?.description ?? '',
+        priority: (a?.priority as ActionItem['priority']) ?? 'medium',
+        category: (a?.category as ActionItem['category']) ?? 'study',
+        estimatedTime: a?.estimatedTime ?? '1시간',
+        completed: !!a?.completed
+      }));
 			setState((prev) => ({
 				...prev,
 				selectedReportId: reportId,
