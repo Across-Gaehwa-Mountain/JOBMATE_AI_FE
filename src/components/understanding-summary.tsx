@@ -8,17 +8,99 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "./ui/t
 
 interface UnderstandingSummaryProps {
   file: File;
-  onAnalyze: (summary: string) => void;
+  onAnalyze: (summary: string, analysisData?: any) => void;
   onBack: () => void;
 }
 
 export function UnderstandingSummary({ file, onAnalyze, onBack }: UnderstandingSummaryProps) {
   const [summary, setSummary] = useState("");
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleAnalyze = () => {
-    if (summary.trim()) {
+  const handleAnalyze = async () => {
+    if (!summary.trim()) return;
+
+    let didNavigate = false;
+    try {
+      setIsSubmitting(true);
+
+      const formData = new FormData();
+      formData.append('file_names', JSON.stringify([file.name]));
+      formData.append('user_summary', summary);
+      formData.append('files', file, file.name);
+
+      // Durable Functions 오케스트레이션 시작
+      const response = await fetch('/api/analyze', {
+        method: 'POST',
+        body: formData
+        // Content-Type은 FormData 사용 시 브라우저가 자동 설정합니다.
+      });
+    console.log(response);
+
+      if (response.status === 202) {
+        const startPayload = await response.json();
+
+        const toProxyPath = (absoluteOrPath: string) => {
+          try {
+            const u = new URL(absoluteOrPath);
+            return `${u.pathname}${u.search}`;
+          } catch {
+            return absoluteOrPath;
+          }
+        };
+
+        const statusUrlRaw: string = startPayload.statusQueryGetUri;
+        const statusUrlPath = toProxyPath(statusUrlRaw);
+        // Durable Functions 상태 URL은 보통 /runtime/... 이므로 그대로 사용 (vite 프록시가 /runtime → 7071로 전달)
+        const statusUrl = statusUrlPath.startsWith('/runtime')
+          ? statusUrlPath
+          : statusUrlPath;
+
+        // 상태 폴링
+        const pollIntervalMs = 1500;
+        let done = false;
+        let finalOutput: any | null = null;
+        while (!done) {
+          const statusResp = await fetch(statusUrl);
+          if (!statusResp.ok) {
+            console.error('상태 조회 실패', await statusResp.text());
+            break;
+          }
+          console.log(statusResp)
+          const statusJson = await statusResp.json();
+          const runtimeStatus = statusJson.runtimeStatus as string;
+
+          if (runtimeStatus === 'Completed') {
+            console.log('분석 완료 output:', statusJson.output);
+            finalOutput = statusJson.output;
+            done = true;
+          } else if (runtimeStatus === 'Failed' || runtimeStatus === 'Terminated') {
+            console.error('오케스트레이션 종료 상태:', runtimeStatus, statusJson);
+            done = true;
+          } else {
+            await new Promise(r => setTimeout(r, pollIntervalMs));
+          }
+        }
+        // 완료 시 부모로 결과 전달
+        if (finalOutput) {
+          onAnalyze(summary, finalOutput);
+          didNavigate = true;
+          return;
+        }
+      } else {
+        console.error('오케스트레이션 시작 실패', response.status, await response.text());
+        onAnalyze(summary);
+        didNavigate = true;
+        return;
+      }
+    } catch (error) {
+      console.error('분석 API 호출 중 오류', error);
       onAnalyze(summary);
+      didNavigate = true;
+      return;
+    } finally{
+      setIsSubmitting(false);
+      // onAnalyze는 성공/실패 지점에서 단 한 번만 호출
     }
   };
 
@@ -118,10 +200,10 @@ export function UnderstandingSummary({ file, onAnalyze, onBack }: UnderstandingS
               </p>
               <Button 
                 onClick={handleAnalyze}
-                disabled={summary.length < 100}
+                disabled={summary.length < 100 || isSubmitting}
                 className="bg-primary hover:bg-primary/90 disabled:opacity-50"
               >
-                분석하기
+                {isSubmitting ? '분석 중…' : '분석하기'}
               </Button>
             </div>
           </Card>

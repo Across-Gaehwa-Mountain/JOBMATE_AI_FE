@@ -56,5 +56,17 @@
     server: {
       port: 3000,
       open: true,
+      proxy: {
+        '/api': {
+          target: 'http://localhost:7071',
+          changeOrigin: true,
+          secure: false,
+        },
+        '/runtime': {
+          target: 'http://localhost:7071',
+          changeOrigin: true,
+          secure: false,
+        },
+      },
     },
   });

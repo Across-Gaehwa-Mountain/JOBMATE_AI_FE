@@ -16,13 +16,15 @@ interface AppState {
   step: AppStep;
   file: File | null;
   summary: string;
+  analysisData: any | null;
 }
 
 export default function App() {
   const [state, setState] = useState<AppState>({
     step: 'landing',
     file: null,
-    summary: ''
+    summary: '',
+    analysisData: null
   });
 
   const handleGetStarted = () => {
@@ -33,8 +35,9 @@ export default function App() {
     setState(prev => ({ ...prev, file, step: 'summary' }));
   };
 
-  const handleAnalyze = (summary: string) => {
-    setState(prev => ({ ...prev, summary, step: 'analysis' }));
+  const handleAnalyze = (summary: string, analysisData?: any) => {
+    console.log(analysisData);
+    setState(prev => ({ ...prev, summary, analysisData: analysisData ?? null, step: 'analysis' }));
   };
 
   const handleNext = () => {
@@ -99,6 +102,7 @@ export default function App() {
           <AnalysisResult
             file={state.file!}
             summary={state.summary}
+            analysis={state.analysisData}
             onNext={handleNext}
             onBack={handleBack}
           />

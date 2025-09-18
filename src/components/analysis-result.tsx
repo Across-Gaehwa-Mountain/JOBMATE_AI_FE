@@ -10,6 +10,7 @@ import { ConceptExplanation } from "./concept-explanation";
 interface AnalysisResultProps {
   file: File;
   summary: string;
+  analysis?: any | null;
   onNext: () => void;
   onBack: () => void;
 }
@@ -28,32 +29,22 @@ interface Question {
   category: string;
 }
 
-export function AnalysisResult({ file, summary, onNext, onBack }: AnalysisResultProps) {
+export function AnalysisResult({ file, summary, analysis, onNext, onBack }: AnalysisResultProps) {
   const [comprehensionScore, setComprehensionScore] = useState(0);
   const [isQuestionsOpen, setIsQuestionsOpen] = useState(false);
   const [selectedConcept, setSelectedConcept] = useState<string | null>(null);
 
-  // Mock data - in real implementation, this would come from AI analysis
-  const feedback: FeedbackItem[] = [
-    {
-      type: 'good',
-      title: '핵심 개념 이해',
-      content: '문서의 주요 개념들을 잘 파악하셨습니다. 특히 프로젝트 관리 방법론과 팀 협업 프로세스에 대한 이해가 뛰어납니다.',
-      keywords: ['프로젝트 관리', '팀 협업']
-    },
-    {
-      type: 'needs-improvement',
-      title: '세부 구현 방법',
-      content: '전체적인 흐름은 이해하셨지만, 구체적인 구현 방법론과 도구 사용법에 대한 이해가 부족합니다.',
-      keywords: ['구현 방법론', '도구 사용법']
-    },
-    {
-      type: 'missed',
-      title: '리스크 관리',
-      content: '문서에서 중요하게 다룬 리스크 관리 전략과 대응 방안에 대한 언급이 누락되었습니다.',
-      keywords: ['리스크 관리', '대응 방안']
-    }
-  ];
+  // 분석 결과 매핑
+  const mapped = (() => {
+    console.log(analysis);
+    const output = analysis?.output ?? analysis; // 상위에서 output 자체를 넘길 수도 있음
+    const score: number | undefined = output?.score ?? output?.feedback?.score;
+    const goodPoints: string[] = output?.feedback?.good_points ?? [];
+    const improvementPoints: string[] = output?.feedback?.improvement_points ?? [];
+    const missedPoints: string[] = output?.feedback?.missed_points ?? output?.feedback?.missed ?? [];
+    const mentorComment: string = output?.feedback?.mentor_comment ?? output?.mentor_comment ?? '';
+    return { score, goodPoints, improvementPoints, missedPoints, mentorComment };
+  })();
 
   const questions: Question[] = [
     {
@@ -77,19 +68,21 @@ export function AnalysisResult({ file, summary, onNext, onBack }: AnalysisResult
   ];
 
   useEffect(() => {
-    // Animate score counting
+    
+    
+    const target = typeof mapped.score === 'number' ? Math.max(0, Math.min(100, mapped.score)) : 72;
     const timer = setInterval(() => {
       setComprehensionScore(prev => {
-        if (prev >= 72) {
+        if (prev >= target) {
           clearInterval(timer);
-          return 72;
+          return target;
         }
         return prev + 2;
       });
     }, 50);
-
     return () => clearInterval(timer);
-  }, []);
+    
+  }, [analysis]);
 
   const getFeedbackIcon = (type: FeedbackItem['type']) => {
     switch (type) {
@@ -174,39 +167,61 @@ export function AnalysisResult({ file, summary, onNext, onBack }: AnalysisResult
               </div>
             </div>
             <h2 className="text-2xl font-semibold mb-2">이해도 점수</h2>
-            <p className="text-muted-foreground">
-              전반적으로 문서의 핵심 내용을 잘 이해하고 계십니다!
-            </p>
+            <p className="text-muted-foreground">{mapped.mentorComment}</p>
           </Card>
 
-          {/* Feedback Cards */}
+          {/* Feedback Cards - 카테고리별 1장, dot 목록 */}
           <div className="grid md:grid-cols-3 gap-6">
-            {feedback.map((item, index) => (
-              <Card key={index} className={`p-6 ${getFeedbackColor(item.type)}`}>
-                <div className="flex items-start gap-3">
-                  {getFeedbackIcon(item.type)}
-                  <div className="flex-1">
-                    <h3 className="font-semibold mb-2">{item.title}</h3>
-                    <p className="text-sm text-muted-foreground mb-3">{item.content}</p>
-                    {item.keywords && (
-                      <div className="flex flex-wrap gap-2">
-                        {item.keywords.map((keyword, idx) => (
-                          <Button
-                            key={idx}
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleKeywordClick(keyword)}
-                            className="text-xs h-6 px-2 hover:bg-primary hover:text-primary-foreground"
-                          >
-                            {keyword}
-                          </Button>
-                        ))}
-                      </div>
-                    )}
-                  </div>
+            {/* 잘한 점 */}
+            <Card className={`p-6 ${getFeedbackColor('good')}`}>
+              <div className="flex items-start gap-3">
+                {getFeedbackIcon('good')}
+                <div className="flex-1">
+                  <h3 className="font-semibold mb-2">잘한 점</h3>
+                  {mapped.goodPoints.length > 0 ? (
+                    <ul className="list-disc pl-5 space-y-1 text-sm text-muted-foreground">
+                      {mapped.goodPoints.slice(0, 3).map((p, i) => (
+                        <li key={i}>{p}</li>
+                      ))}
+                    </ul>
+                  ) : null}
                 </div>
-              </Card>
-            ))}
+              </div>
+            </Card>
+
+            {/* 개선 필요 */}
+            <Card className={`p-6 ${getFeedbackColor('needs-improvement')}`}>
+              <div className="flex items-start gap-3">
+                {getFeedbackIcon('needs-improvement')}
+                <div className="flex-1">
+                  <h3 className="font-semibold mb-2">개선 필요</h3>
+                  {mapped.improvementPoints.length > 0 ? (
+                    <ul className="list-disc pl-5 space-y-1 text-sm text-muted-foreground">
+                      {mapped.improvementPoints.slice(0, 3).map((p, i) => (
+                        <li key={i}>{p}</li>
+                      ))}
+                    </ul>
+                  ) : null}
+                </div>
+              </div>
+            </Card>
+
+            {/* 놓친 점 */}
+            <Card className={`p-6 ${getFeedbackColor('missed')}`}>
+              <div className="flex items-start gap-3">
+                {getFeedbackIcon('missed')}
+                <div className="flex-1">
+                  <h3 className="font-semibold mb-2">놓친 점</h3>
+                  {mapped.missedPoints.length > 0 ? (
+                    <ul className="list-disc pl-5 space-y-1 text-sm text-muted-foreground">
+                      {mapped.missedPoints.slice(0, 3).map((p, i) => (
+                        <li key={i}>{p}</li>
+                      ))}
+                    </ul>
+                  ) : null}
+                </div>
+              </div>
+            </Card>
           </div>
 
           {/* Core Questions */}
