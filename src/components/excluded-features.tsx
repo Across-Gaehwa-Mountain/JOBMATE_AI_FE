@@ -19,7 +19,7 @@ export function ExcludedFeatures({ onBack }: ExcludedFeaturesProps) {
       reason: '가능하지 어려움',
       status: 'coming-soon',
       details: {
-        overview: '회의나 강의 음성을 자동으로 텍스트로 변환하여 JobMate AI로 분석할 수 있는 기능입니다.',
+        overview: '회의나 강의 음성을 자동으로 텍스트로 변환하여 히든 사수(JobMate AI)로 분석할 수 있는 기능입니다.',
         benefits: [
           '실시간 회의 내용 기록 및 분석',
           '중요한 내용 자동 하이라이트',
@@ -52,7 +52,7 @@ export function ExcludedFeatures({ onBack }: ExcludedFeaturesProps) {
           '팀 전체 지식 수준 향상'
         ],
         workflow: [
-          'Slack/Teams 워크스페이스에 JobMate 앱 설치',
+          'Slack/Teams 워크스페이스에 히든 사수 앱 설치',
           '문서 링크나 파일 공유 시 자동 감지',
           '팀원들에게 이해도 측정 제안',
           '결과를 채널에 요약하여 공유',

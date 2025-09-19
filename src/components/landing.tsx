@@ -34,7 +34,7 @@ export function Landing({ onGetStarted, onChooseGuest, onChooseUser, userId }: L
         {/* Hero Section */}
         <div className="text-center mb-16">
           <div className="mb-8">
-            <h1 className="text-5xl font-bold text-primary mb-4">JobMate AI</h1>
+            <h1 className="text-5xl font-bold text-primary mb-4">히든 사수</h1>
             <div className="w-16 h-1 bg-primary mx-auto rounded-full"></div>
           </div>
           

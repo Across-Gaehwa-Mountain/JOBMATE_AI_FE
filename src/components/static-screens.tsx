@@ -47,7 +47,7 @@ export function StaticScreens() {
       <div className={`${viewMode === 'mobile' ? 'max-w-sm' : 'max-w-6xl'} mx-auto`}>
         {/* Hero Section */}
         <div className="text-center mb-16">
-          <h1 className="text-5xl font-bold text-primary mb-4">JobMate AI</h1>
+          <h1 className="text-5xl font-bold text-primary mb-4">히든 사수</h1>
           <div className="w-16 h-1 bg-primary mx-auto rounded-full mb-8"></div>
           <h2 className="text-3xl font-semibold mb-6">업무 문서를 더 정확하게 이해하세요</h2>
           <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto leading-relaxed">
@@ -395,7 +395,7 @@ export function StaticScreens() {
                     <Badge className="bg-accent">곧 출시</Badge>
                   </div>
                   <p className="text-muted-foreground mb-4">
-                    회의나 강의 음성을 자동으로 텍스트로 변환하여 JobMate AI로 분석할 수 있는 기능입니다.
+                    회의나 강의 음성을 자동으로 텍스트로 변환하여 히든 사수로 분석할 수 있는 기능입니다.
                   </p>
                 </div>
               </div>
@@ -447,7 +447,7 @@ export function StaticScreens() {
         {/* Header */}
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold text-primary mb-4">Static Screen Layouts</h1>
-          <p className="text-xl text-muted-foreground">JobMate AI의 모든 화면 레이아웃을 정적 형태로 확인하세요</p>
+          <p className="text-xl text-muted-foreground">히든 사수의 모든 화면 레이아웃을 정적 형태로 확인하세요</p>
         </div>
 
         {/* Controls */}
