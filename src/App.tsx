@@ -18,7 +18,7 @@ import {
 	DialogTitle,
 } from "./components/ui/dialog";
 import { Input } from "./components/ui/input";
-import { Settings, Zap, Palette, Monitor } from "lucide-react";
+import { Settings, Zap, Palette, Monitor,Star } from "lucide-react";
 
 type AppStep =
 	| "landing"
@@ -351,6 +351,7 @@ export default function App() {
 			case "landing":
 				return (
 					<Landing
+						userId={state.userId}
 						onGetStarted={handleGetStarted}
 						onChooseGuest={handleChooseGuest}
 						onChooseUser={handleChooseUser}
@@ -413,6 +414,7 @@ export default function App() {
 			default:
 				return (
 					<Landing
+            userId={state.userId}
 						onGetStarted={handleGetStarted}
 						onChooseGuest={handleChooseGuest}
 						onChooseUser={handleChooseUser}
@@ -515,6 +517,7 @@ export default function App() {
 						path="/"
 						element={
 							<Landing
+								userId={state.userId}
 								onGetStarted={handleGetStarted}
 								onChooseGuest={handleChooseGuest}
 								onChooseUser={handleChooseUser}
@@ -584,6 +587,7 @@ export default function App() {
 						path="*"
 						element={
 							<Landing
+								userId={state.userId}
 								onGetStarted={handleGetStarted}
 								onChooseGuest={handleChooseGuest}
 								onChooseUser={handleChooseUser}
@@ -653,8 +657,8 @@ export default function App() {
 							연동하고 시작
 						</Button>
 					</DialogFooter>
-				</DialogContent>
-			</Dialog>
+					</DialogContent>
+				</Dialog>
 		</div>
 	);
 }

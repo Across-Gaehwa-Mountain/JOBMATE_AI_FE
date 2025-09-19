@@ -1,7 +1,7 @@
 import { Button } from "./ui/button";
 import { Card } from "./ui/card";
 import { Badge } from "./ui/badge";
-import { FileText, Clock, ArrowRight } from "lucide-react";
+import { FileText, Clock, ArrowRight, Star } from "lucide-react";
 
 export interface ReportListItem {
   id: string;
@@ -40,26 +40,44 @@ export function ReportHistory({ reports, onBack, onOpen }: ReportHistoryProps) {
             <Card className="p-6 text-center text-muted-foreground">아직 저장된 보고서가 없습니다.</Card>
           ) : (
             reports.map((r) => (
-              <Card key={r.id} className="p-4 flex items-center justify-between hover:bg-muted/30 transition-colors">
-                <div className="flex items-center gap-3">
-                  <FileText className="w-6 h-6 text-primary" />
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <span className="font-medium">{r.fileName}</span>
+              <Card key={r.id} className="p-4 group transition-all duration-200 ease-in-out hover:shadow-md hover:border-primary/30">
+              <div className="flex items-center justify-between w-full">
+                <div className="flex items-center gap-4">
+                  {/* 아이콘에 부드러운 배경색을 추가하여 시각적 포인트를 줍니다. */}
+                  <div className="bg-primary/10 p-3 rounded-lg">
+                    <FileText className="w-6 h-6 text-primary" />
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    {/* 파일 이름을 더 강조합니다. */}
+                    <span className="font-semibold text-base text-card-foreground">{r.fileName}</span>
+                    
+                    {/* 보조 정보를 한 줄로 묶어 깔끔하게 표시합니다. */}
+                    <div className="text-xs text-muted-foreground flex items-center gap-4">
+                      {/* 점수 */}
                       {typeof r.score === 'number' && (
-                        <Badge variant="secondary">점수 {r.score}</Badge>
+                        <div className="flex items-center gap-1">
+                          <Star className="w-3 h-3 text-amber-500" />
+                          <span className="font-medium">{r.score}점</span>
+                        </div>
                       )}
-                    </div>
-                    <div className="text-xs text-muted-foreground flex items-center gap-1 mt-1">
-                      <Clock className="w-3 h-3" />
-                      {new Date(r.createdAt).toLocaleString()}
+                      {/* 생성 날짜 */}
+                      <div className="flex items-center gap-1.5">
+                        <Clock className="w-3 h-3" />
+                        <span>{new Date(r.createdAt).toLocaleString()}</span>
+                      </div>
                     </div>
                   </div>
                 </div>
-                <Button size="sm" className="bg-primary hover:bg-primary/90" onClick={() => onOpen(r.id)}>
-                  열기 <ArrowRight className="w-4 h-4 ml-1" />
+        
+                {/* 버튼은 평소에는 숨겨져 있다가, 카드(group)에 마우스를 올리면 나타납니다.
+                  이를 통해 UI가 더 깔끔하고 정돈된 느낌을 줍니다.
+                */}
+                <Button size="sm" className="bg-primary hover:bg-primary/90 opacity-0 group-hover:opacity-100 transition-opacity duration-300" onClick={() => onOpen(r.id)}>
+                  열기
+                  <ArrowRight className="w-4 h-4 ml-1.5" />
                 </Button>
-              </Card>
+              </div>
+            </Card>
             ))
           )}
         </div>

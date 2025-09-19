@@ -6,9 +6,10 @@ interface LandingProps {
   onGetStarted: () => void;
   onChooseGuest: () => void;
   onChooseUser: () => void;
-}
+  userId: string | null;
+  }
 
-export function Landing({ onGetStarted, onChooseGuest, onChooseUser }: LandingProps) {
+export function Landing({ onGetStarted, onChooseGuest, onChooseUser, userId }: LandingProps) {
   const features = [
     {
       icon: <FileText className="w-12 h-12 text-primary" />,
@@ -46,6 +47,7 @@ export function Landing({ onGetStarted, onChooseGuest, onChooseUser }: LandingPr
             중요한 내용을 놓치지 않도록 도와드립니다.
           </p>
           
+          {!userId && (
           <div className="flex items-center justify-center gap-3">
             <Button 
               onClick={onChooseUser}
@@ -63,6 +65,19 @@ export function Landing({ onGetStarted, onChooseGuest, onChooseUser }: LandingPr
               비회원으로 이용하기 <ArrowRight className="ml-2 w-5 h-5" />
             </Button>
           </div>
+          )}
+          {userId && (
+            <div className="flex items-center justify-center gap-3">
+              <Button 
+                onClick={onGetStarted}
+                size="lg"
+                variant="outline"
+                className="px-6 py-4 rounded-lg"
+              >
+                업로드하기 <ArrowRight className="ml-2 w-5 h-5" />
+              </Button>
+            </div>
+          )}
         </div>
 
         {/* Features Section */}
