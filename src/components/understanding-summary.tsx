@@ -1,8 +1,30 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { FaSpinner } from "react-icons/fa";
+// 분석 중입니다... 애니메이션용 커스텀 훅
+function useLoadingDots(isActive: boolean, maxDots = 3, interval = 400) {
+	const [dots, setDots] = useState(0);
+	useEffect(() => {
+		if (!isActive) {
+			setDots(0);
+			return;
+		}
+		const timer = setInterval(() => {
+			setDots((prev) => (prev + 1) % (maxDots + 1));
+		}, interval);
+		return () => clearInterval(timer);
+	}, [isActive, maxDots, interval]);
+	return ".".repeat(dots);
+}
 import { ChevronDown, ChevronUp, HelpCircle, FileText } from "lucide-react";
 import { Button } from "./ui/button";
 import { Card } from "./ui/card";
 import { Textarea } from "./ui/textarea";
+
+
+// react-icons 기반 스피너
+function Spinner({ size = 20, className = "" }: { size?: number; className?: string }) {
+	return <FaSpinner size={size} className={`animate-spin text-primary ${className}`} />;
+}
 import {
 	Collapsible,
 	CollapsibleContent,
@@ -28,9 +50,10 @@ export function UnderstandingSummary({
 	onAnalyze,
 	onBack,
 }: UnderstandingSummaryProps) {
-	const [summary, setSummary] = useState("");
-	const [isPreviewOpen, setIsPreviewOpen] = useState(false);
-	const [isSubmitting, setIsSubmitting] = useState(false);
+		const [summary, setSummary] = useState("");
+		const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+		const [isSubmitting, setIsSubmitting] = useState(false);
+		const loadingDots = useLoadingDots(isSubmitting);
 
 	const handleAnalyze = async () => {
 		if (!summary.trim()) return;
@@ -141,8 +164,17 @@ export function UnderstandingSummary({
 	];
 
 	return (
-		<div className="min-h-screen bg-background">
-			<div className="container mx-auto px-4 py-8">
+		   <div className="min-h-screen bg-background relative">
+			   {/* 전체 화면 디밍 및 중앙 스피너 */}
+							 {isSubmitting && (
+									 <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black/40 backdrop-blur-sm select-none">
+											 <Spinner size={48} className="text-primary" />
+											 <span className="mt-4 text-lg text-primary font-semibold animate-pulse select-none pointer-events-none">
+												 분석 중입니다{loadingDots}
+											 </span>
+									 </div>
+							 )}
+			   <div className="container mx-auto px-4 py-8">
 				{/* Header */}
 				<div className="mb-8">
 					<Button variant="ghost" onClick={onBack} className="mb-4">
@@ -193,58 +225,61 @@ export function UnderstandingSummary({
 					</Collapsible>
 
 					{/* Writing Guidelines */}
-					<Card className="p-6">
-						<div className="flex items-center gap-2 mb-4">
-							<HelpCircle className="w-5 h-5 text-primary" />
-							<h3 className="font-semibold">작성 가이드라인</h3>
-						</div>
-						<ul className="space-y-2 text-sm text-muted-foreground">
-							{guidelines.map((guideline, index) => (
-								<li key={index} className="flex items-start gap-2">
-									<span className="w-1.5 h-1.5 bg-primary rounded-full mt-2 flex-shrink-0"></span>
-									{guideline}
-								</li>
-							))}
-						</ul>
-					</Card>
+					<div className="relative">
+						<Card className="p-6">
+							<div className="flex items-center gap-2 mb-4">
+								<HelpCircle className="w-5 h-5 text-primary" />
+								<h3 className="font-semibold">작성 가이드라인</h3>
+							</div>
+							<ul className="space-y-2 text-sm text-muted-foreground">
+								{guidelines.map((guideline, index) => (
+									<li key={index} className="flex items-start gap-2">
+										<span className="w-1.5 h-1.5 bg-primary rounded-full mt-2 flex-shrink-0"></span>
+										{guideline}
+									</li>
+								))}
+							</ul>
+						</Card>
 
-					{/* Summary Input */}
-					<Card className="p-6">
-						<div className="flex items-center gap-2 mb-4">
-							<h3 className="font-semibold">내가 이해한 내용</h3>
-							<TooltipProvider>
-								<Tooltip>
-									<TooltipTrigger>
-										<HelpCircle className="w-4 h-4 text-muted-foreground" />
-									</TooltipTrigger>
-									<TooltipContent>
-										<p>문서의 핵심 내용을 자신만의 언어로 정리해주세요</p>
-									</TooltipContent>
-								</Tooltip>
-							</TooltipProvider>
-						</div>
+						{/* Summary Input */}
+						<Card className="p-6">
+							<div className="flex items-center gap-2 mb-4">
+								<h3 className="font-semibold">내가 이해한 내용</h3>
+								<TooltipProvider>
+									<Tooltip>
+										<TooltipTrigger>
+											<HelpCircle className="w-4 h-4 text-muted-foreground" />
+										</TooltipTrigger>
+										<TooltipContent>
+											<p>문서의 핵심 내용을 자신만의 언어로 정리해주세요</p>
+										</TooltipContent>
+									</Tooltip>
+								</TooltipProvider>
+							</div>
 
-						<Textarea
-							value={summary}
-							onChange={(e) => setSummary(e.target.value)}
-							placeholder="내가 이해한 내용을 작성해주세요. 문서의 주요 개념, 중요한 포인트, 그리고 구체적인 예시들을 포함하여 자세히 설명해주세요..."
-							className="min-h-[300px] resize-none"
-						/>
+							<Textarea
+								value={summary}
+								onChange={(e) => setSummary(e.target.value)}
+								placeholder="내가 이해한 내용을 작성해주세요. 문서의 주요 개념, 중요한 포인트, 그리고 구체적인 예시들을 포함하여 자세히 설명해주세요..."
+								className="min-h-[300px] resize-none"
+								disabled={isSubmitting}
+							/>
 
-						<div className="flex justify-between items-center mt-4">
-							<p className="text-sm text-muted-foreground">
-								{summary.length} / 100자 (최소)
-							</p>
-							<Button
-								onClick={handleAnalyze}
-								disabled={summary.length < 100 || isSubmitting}
-								className="bg-primary hover:bg-primary/90 disabled:opacity-50"
-							>
-								{isSubmitting ? "분석 중…" : "분석하기"}
-							</Button>
-						</div>
-					</Card>
-
+							<div className="flex justify-between items-center mt-4">
+								<p className="text-sm text-muted-foreground">
+									{summary.length} / 100자 (최소)
+								</p>
+								<Button
+									onClick={handleAnalyze}
+									disabled={summary.length < 100 || isSubmitting}
+									className="bg-primary hover:bg-primary/90 disabled:opacity-50 flex items-center gap-2"
+								>
+									{isSubmitting && <Spinner size={18} className="mr-1" />}
+									{isSubmitting ? "분석 중…" : "분석하기"}
+								</Button>
+							</div>
+						</Card>
+					</div>
 					{/* Additional Tips */}
 					<Card className="p-6 bg-primary/5 border-primary/20">
 						<h4 className="font-semibold text-primary mb-2">
