@@ -9,6 +9,8 @@ export interface NextActionsProps {
   onBack: () => void;
   onComplete: () => void;
   items?: ActionItem[];
+  userId?: string | null;
+  reportId?: string | null;
 }
 
 export interface ActionItem {
@@ -18,19 +20,64 @@ export interface ActionItem {
   priority: 'high' | 'medium' | 'low';
   category: 'preparation' | 'study' | 'practice' | 'meeting';
   estimatedTime: string;
-  completed: boolean;
+  isChecked: boolean;
 }
 
-export function NextActions({ onBack, onComplete, items }: NextActionsProps) {
-  console.log(items);
+export function NextActions({ onBack, onComplete, items, userId, reportId }: NextActionsProps) {
   const [actionItems, setActionItems] = useState<ActionItem[]>(items ?? []);
 
-  const toggleActionItem = (id: string) => {
-    setActionItems(prev => 
-      prev.map(item => 
-        item.id === id ? { ...item, completed: !item.completed } : item
-      )
+  const toggleActionItem = async (id: string) => {
+    // 먼저 UI 상태를 업데이트
+    const updatedItems = actionItems.map(item => 
+      item.id === id ? { ...item, isChecked: !item.isChecked } : item
     );
+    setActionItems(updatedItems);
+
+    // API 호출
+    if (userId && reportId) {
+      const targetItem = actionItems.find(item => item.id === id);
+      if (targetItem) {
+        const nextActionIdx = actionItems.findIndex(item => item.id === id);
+        const isChecked = !targetItem.isChecked;
+
+        console.log('API 호출 정보:', {
+          userId,
+          reportId,
+          nextActionIdx,
+          isChecked,
+          targetItemId: id
+        });
+
+        try {
+          const response = await fetch(
+            `/api/checked?user_id=${encodeURIComponent(userId)}&report_id=${encodeURIComponent(reportId)}&next_action_idx=${nextActionIdx}&is_checked=${isChecked}`,
+            {
+              method: 'PUT',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+            }
+          );
+          
+          console.log('API 응답 상태:', response.status);
+          
+          if (!response.ok) {
+            const errorText = await response.text();
+            console.error('액션 아이템 상태 업데이트 실패:', response.status, errorText);
+            // API 호출 실패 시 UI 상태를 원래대로 되돌림
+            setActionItems(actionItems);
+          } else {
+            console.log('액션 아이템 상태 업데이트 성공');
+          }
+        } catch (error) {
+          console.error('액션 아이템 상태 업데이트 중 오류:', error);
+          // API 호출 실패 시 UI 상태를 원래대로 되돌림
+          setActionItems(actionItems);
+        }
+      }
+    } else {
+      console.log('userId 또는 reportId가 없음:', { userId, reportId });
+    }
   };
 
   const getPriorityColor = (priority: ActionItem['priority']) => {
@@ -81,7 +128,7 @@ export function NextActions({ onBack, onComplete, items }: NextActionsProps) {
     }
   };
 
-  const completedCount = actionItems.filter(item => item.completed).length;
+  const completedCount = actionItems.filter(item => item.isChecked).length;
   const totalCount = actionItems.length;
 
   return (
@@ -127,14 +174,14 @@ export function NextActions({ onBack, onComplete, items }: NextActionsProps) {
                   <div key={item.id} className="flex items-start gap-3 p-3 bg-background rounded-lg">
                     <Checkbox
                       id={`highlight-${item.id}`}
-                      checked={item.completed}
+                      checked={item.isChecked}
                       onCheckedChange={() => toggleActionItem(item.id)}
                       className="mt-1"
                     />
                     <div className="flex-1">
                       <label 
                         htmlFor={`highlight-${item.id}`}
-                        className={`font-medium cursor-pointer ${item.completed ? 'line-through text-muted-foreground' : ''}`}
+                        className={`font-medium cursor-pointer ${item.isChecked ? 'line-through text-muted-foreground' : ''}`}
                       >
                         {item.title}
                       </label>
@@ -156,7 +203,7 @@ export function NextActions({ onBack, onComplete, items }: NextActionsProps) {
                 <div key={item.id} className="flex items-start gap-4 p-4 border rounded-lg hover:bg-muted/30 transition-colors">
                   <Checkbox
                     id={item.id}
-                    checked={item.completed}
+                    checked={item.isChecked}
                     onCheckedChange={() => toggleActionItem(item.id)}
                     className="mt-1"
                   />
@@ -165,7 +212,7 @@ export function NextActions({ onBack, onComplete, items }: NextActionsProps) {
                     <div className="flex items-center gap-2 mb-2">
                       <label 
                         htmlFor={item.id}
-                        className={`font-medium cursor-pointer ${item.completed ? 'line-through text-muted-foreground' : ''}`}
+                        className={`font-medium cursor-pointer ${item.isChecked ? 'line-through text-muted-foreground' : ''}`}
                       >
                         {item.title}
                       </label>
@@ -175,7 +222,7 @@ export function NextActions({ onBack, onComplete, items }: NextActionsProps) {
                       </Badge>
                     </div>
                     
-                    <p className={`text-sm mb-2 ${item.completed ? 'text-muted-foreground' : 'text-muted-foreground'}`}>
+                    <p className={`text-sm mb-2 ${item.isChecked ? 'text-muted-foreground' : 'text-muted-foreground'}`}>
                       {item.description}
                     </p>
                     

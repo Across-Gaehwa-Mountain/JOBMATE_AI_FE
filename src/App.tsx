@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Routes, Route, useLocation, useNavigate } from "react-router-dom";
 import { Landing } from "./components/landing";
 import { DocumentUpload } from "./components/document-upload";
@@ -145,6 +145,7 @@ export default function App() {
 			crypto?.randomUUID ? crypto.randomUUID() : String(Date.now());
 		const reportId = genId();
 		const output = state.analysisData?.output ?? state.analysisData ?? {};
+    console.log(output);
 		const newReport: ReportSummary = {
 			id: reportId,
       title: output.title ?? "알 수 없는 파일",
@@ -162,7 +163,7 @@ export default function App() {
 				priority: (a?.priority as ActionItem["priority"]) ?? "medium",
 				category: (a?.category as ActionItem["category"]) ?? "study",
 				estimatedTime: a?.estimatedTime ?? "1시간",
-				completed: false,
+				isChecked: false,
 			})) as ActionItem[],
 		};
 		setState((prev) => ({
@@ -207,12 +208,12 @@ export default function App() {
         const fileNameFromAnalysis = Array.isArray(analysis.file_analysis)
           ? analysis.file_analysis[0]?.file_name
           : undefined;
-      
         return {
           id: r.report_id ?? r.id ?? String(r._id ?? idx),
           fileName: r.file_name ?? r.fileName ?? fileNameFromAnalysis ?? '알 수 없는 파일',
           createdAt: r.creation_datetime ?? r.created_at ?? r.createdAt ?? new Date().toISOString(),
           score: analysis.score ?? feedback.score,
+          title: analysis.title,
           goodPoints: feedback.good_points ?? [],
           improvementPoints: feedback.improvement_points ?? [],
           missedPoints: feedback.missed_points ?? [],
@@ -223,7 +224,7 @@ export default function App() {
             priority: (a?.priority as ActionItem['priority']) ?? 'medium',
             category: (a?.category as ActionItem['category']) ?? 'study',
             estimatedTime: a?.estimatedTime ?? '1시간',
-            completed: !!a?.completed,
+            isChecked: !!a?.isChecked,
           })),
         } as ReportSummary;
       });
@@ -235,8 +236,14 @@ export default function App() {
 		}
 	};
 
-	const openReport = async (reportId: string) => {
+	const openReport = useCallback(async (reportId: string) => {
 		if (!state.userId) return;
+		
+		// 이미 같은 보고서를 로딩 중이거나 로드된 경우 중복 호출 방지
+		if (state.selectedReportId === reportId && state.step === "analysis") {
+			return;
+		}
+		
 		try {
 			navigate(`/report/${encodeURIComponent(reportId)}`);
 			const resp = await fetch(
@@ -273,7 +280,7 @@ export default function App() {
         priority: (a?.priority as ActionItem['priority']) ?? 'medium',
         category: (a?.category as ActionItem['category']) ?? 'study',
         estimatedTime: a?.estimatedTime ?? '1시간',
-        completed: !!a?.completed
+        isChecked: !!a?.isChecked
       }));
 			setState((prev) => ({
 				...prev,
@@ -287,16 +294,18 @@ export default function App() {
 		} catch (e) {
 			console.error("보고서 상세 조회 중 오류", e);
 		}
-	};
+	}, [state.userId, state.selectedReportId, state.step, navigate]);
 
 	// URL 경로 동기화 (react-router): /report/:id 로 진입 시 해당 보고서 열기
-	const path = location.pathname;
-	if (path.startsWith("/report/") && path !== "/report/new") {
-		const id = decodeURIComponent(path.replace("/report/", ""));
-		if (state.userId && state.step !== "analysis" && state.step !== "actions") {
-			openReport(id);
+	useEffect(() => {
+		const path = location.pathname;
+		if (path.startsWith("/report/") && path !== "/report/new") {
+			const id = decodeURIComponent(path.replace("/report/", ""));
+			if (state.userId && state.step !== "analysis" && state.step !== "actions") {
+				openReport(id);
+			}
 		}
-	}
+	}, [location.pathname, state.userId, state.step, openReport]); // 의존성 배열 추가
 
 	const goHome = () => {
 		navigate("/");
@@ -397,6 +406,8 @@ export default function App() {
 								  )?.actionItems
 								: undefined
 						}
+						userId={state.userId}
+						reportId={state.selectedReportId}
 					/>
 				);
 			case "history":
@@ -563,6 +574,8 @@ export default function App() {
 											  )?.actionItems
 											: state.analysisData?.next_actions ?? []
 									}
+									userId={state.userId}
+									reportId={state.selectedReportId}
 								/>
 							) : (
 								<AnalysisResult
