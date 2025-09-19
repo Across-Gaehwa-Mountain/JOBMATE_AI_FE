@@ -448,7 +448,7 @@ export default function App() {
 									onClick={goHome}
 									className="text-xl font-bold text-primary hover:opacity-80 transition-opacity"
 								>
-									JobMate AI
+									히든 사수
 								</button>
 								<div className="w-1 h-1 bg-primary rounded-full"></div>
 								<span className="text-sm text-muted-foreground">
