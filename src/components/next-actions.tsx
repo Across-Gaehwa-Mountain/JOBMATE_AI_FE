@@ -24,6 +24,8 @@ export interface ActionItem {
 }
 
 export function NextActions({ onBack, onComplete, items, userId, reportId }: NextActionsProps) {
+
+  console.log(items);
   const [actionItems, setActionItems] = useState<ActionItem[]>(items ?? []);
   const toggleActionItem = async (id: string) => {
     // 먼저 UI 상태를 업데이트

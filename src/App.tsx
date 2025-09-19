@@ -145,7 +145,6 @@ export default function App() {
 			crypto?.randomUUID ? crypto.randomUUID() : String(Date.now());
 		const reportId = genId();
 		const output = state.analysisData?.output ?? state.analysisData ?? {};
-    console.log(output);
 		const newReport: ReportSummary = {
 			id: reportId,
       title: output.title ?? "알 수 없는 파일",
@@ -336,11 +335,7 @@ export default function App() {
 				break;
 		}
 	};
-console.log(state.selectedReportId
-  ? state.reportHistory.find(
-      (r) => r.id === state.selectedReportId
-    )?.actionItems
-  : undefined)
+
 	// User mode controls
 	const useAsGuest = () => {
 		setState((prev) => ({ ...prev, userId: null, reportHistory: [] }));
@@ -399,17 +394,12 @@ console.log(state.selectedReportId
 					/>
 				);
 			case "actions":
+
 				return (
 					<NextActions
 						onBack={handleBack}
 						onComplete={handleComplete}
-						items={
-							state.selectedReportId
-								? state.reportHistory.find(
-										(r) => r.id === state.selectedReportId
-								  )?.actionItems
-								: undefined
-						}
+						items={state.analysisData?.next_actions ?? []}
 						userId={state.userId}
 						reportId={state.selectedReportId}
 					/>
@@ -439,6 +429,12 @@ console.log(state.selectedReportId
 				);
 		}
 	};
+
+  console.log(state.selectedReportId)
+  console.log(state.reportHistory)
+
+
+  console.log(state.analysisData?.next_actions)
 
 	return (
 		<div className="min-h-screen bg-background">
@@ -572,11 +568,7 @@ console.log(state.selectedReportId
 									onBack={handleBack}
 									onComplete={handleComplete}
 									items={
-										state.selectedReportId
-											? state.reportHistory.find(
-													(r) => r.id === state.selectedReportId
-											  )?.actionItems
-											: state.analysisData?.next_actions ?? []
+									state.analysisData?.next_actions ?? []
 									}
 									userId={state.userId}
 									reportId={state.selectedReportId}

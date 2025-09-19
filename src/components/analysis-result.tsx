@@ -47,7 +47,6 @@ export function AnalysisResult({ file, summary, analysis, onNext, onBack }: Anal
 
   // 분석 결과 매핑
   const mapped = (() => {
-    console.log(analysis);
     const output = analysis?.output ?? analysis; // 상위에서 output 자체를 넘길 수도 있음
     const score: number | undefined = output?.score ?? output?.feedback?.score;
     const goodPoints: string[] = output?.feedback?.good_points ?? [];
