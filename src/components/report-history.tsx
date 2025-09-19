@@ -57,8 +57,55 @@ export function ReportHistory({ reports, onBack, onOpen }: ReportHistoryProps) {
                       {/* 점수 */}
                       {typeof r.score === 'number' && (
                         <div className="flex items-center gap-1">
-                          <Star className="w-3 h-3 text-amber-500" />
-                          <span className="font-medium">{r.score}점</span>
+                          {(() => {
+                            const score = r.score;
+                            const stars = [];
+                            
+                            // 별 개수 결정
+                            let filledStars = 0;
+                            if (score >= 90) filledStars = 5;
+                            else if (score >= 70) filledStars = 4;
+                            else if (score >= 50) filledStars = 3;
+                            else if (score >= 20) filledStars = 2;
+                            else filledStars = 1;
+                            
+                            // 별 렌더링
+                            for (let i = 0; i < 5; i++) {
+                              if (i < filledStars) {
+                                if (score < 20 && i === 0) {
+                                  // 20점 미만일 때 첫 번째 별은 노랑색 테두리만
+                                  stars.push(
+                                    <Star 
+                                      key={i} 
+                                      className="w-3 h-3" 
+                                      style={{ color: '#eab308', fill: 'none' }} 
+                                    />
+                                  );
+                                } else {
+                                  // 채워진 별 (노랑색)
+                                  stars.push(
+                                    <Star 
+                                      key={i} 
+                                      className="w-3 h-3" 
+                                      style={{ color: '#eab308', fill: '#eab308' }} 
+                                    />
+                                  );
+                                }
+                              } else {
+                                // 빈 별 (회색)
+                                stars.push(
+                                  <Star 
+                                    key={i} 
+                                    className="w-3 h-3" 
+                                    style={{ color: '#d1d5db', fill: 'none' }} 
+                                  />
+                                );
+                              }
+                            }
+                            
+                            return stars;
+                          })()}
+                          <span className="font-medium ml-1">{r.score}점</span>
                         </div>
                       )}
                       {/* 생성 날짜 */}
