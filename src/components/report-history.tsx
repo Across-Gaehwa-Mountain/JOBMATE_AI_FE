@@ -5,6 +5,7 @@ import { FileText, Clock, ArrowRight, Star } from "lucide-react";
 
 export interface ReportListItem {
   id: string;
+  title: string;
   fileName: string;
   createdAt: string;
   score?: number;
@@ -49,7 +50,7 @@ export function ReportHistory({ reports, onBack, onOpen }: ReportHistoryProps) {
                   </div>
                   <div className="flex flex-col gap-1">
                     {/* 파일 이름을 더 강조합니다. */}
-                    <span className="font-semibold text-base text-card-foreground">{r.fileName}</span>
+                    <span className="font-semibold text-base text-card-foreground">{r.title}</span>
                     
                     {/* 보조 정보를 한 줄로 묶어 깔끔하게 표시합니다. */}
                     <div className="text-xs text-muted-foreground flex items-center gap-4">

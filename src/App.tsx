@@ -45,6 +45,7 @@ interface AppState {
 
 interface ReportSummary {
 	id: string;
+  title: string;
 	fileName: string;
 	createdAt: string;
 	score?: number;
@@ -146,6 +147,7 @@ export default function App() {
 		const output = state.analysisData?.output ?? state.analysisData ?? {};
 		const newReport: ReportSummary = {
 			id: reportId,
+      title: output.title ?? "알 수 없는 파일",
 			fileName: state.file?.name ?? "알 수 없는 파일",
 			createdAt: new Date().toISOString(),
 			score: output?.score ?? output?.feedback?.score,
