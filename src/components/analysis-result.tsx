@@ -56,7 +56,6 @@ export function AnalysisResult({ file, summary, analysis, onNext, onBack }: Anal
     const mentorComment: string = output?.feedback?.mentor_comment ?? output?.mentor_comment ?? '';
     const questions: Question[] = output?.suggested_questions ?? [];
     const nextActions: Question[] = output?.next_actions ?? [];
-    
     return { score, goodPoints, improvementPoints, missedPoints, mentorComment, questions, nextActions };
   })();
 

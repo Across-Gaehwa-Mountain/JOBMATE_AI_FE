@@ -23,7 +23,12 @@ import { Textarea } from "./ui/textarea";
 
 // react-icons 기반 스피너
 function Spinner({ size = 20, className = "" }: { size?: number; className?: string }) {
-	return <FaSpinner size={size} className={`animate-spin text-primary ${className}`} />;
+	return (
+		<FaSpinner 
+			size={size} 
+			className={`text-primary custom-spin ${className}`}
+		/>
+	);
 }
 import {
 	Collapsible,

@@ -336,7 +336,11 @@ export default function App() {
 				break;
 		}
 	};
-
+console.log(state.selectedReportId
+  ? state.reportHistory.find(
+      (r) => r.id === state.selectedReportId
+    )?.actionItems
+  : undefined)
 	// User mode controls
 	const useAsGuest = () => {
 		setState((prev) => ({ ...prev, userId: null, reportHistory: [] }));
