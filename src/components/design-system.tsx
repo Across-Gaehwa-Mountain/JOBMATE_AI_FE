@@ -75,7 +75,7 @@ export function DesignSystem() {
       <div className="container mx-auto px-6 py-8">
         {/* Header */}
         <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-primary mb-4">JobMate AI Design System</h1>
+          <h1 className="text-4xl font-bold text-primary mb-4">히든 사수 Design System</h1>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
             업무 문서 이해도 향상을 위한 AI 서비스의 디자인 시스템
           </p>
