@@ -171,9 +171,12 @@ export function AnalysisResult({ file, summary, analysis, onNext, onBack }: Anal
                 <div className="flex-1">
                   <h3 className="font-semibold mb-2">잘한 점</h3>
                   {mapped.goodPoints.length > 0 ? (
-                    <ul className="list-disc pl-5 space-y-1 text-sm text-muted-foreground">
+                    	<ul className="space-y-2 text-sm text-muted-foreground list-disc list-inside">
                       {mapped.goodPoints.slice(0, 3).map((p, i) => (
-                        <li key={i}>{p}</li>
+                       		<li key={i} className="flex items-start gap-2 leading-relaxed">
+                           <span className="text-primary mt-0.5">•</span>
+                           <span>{p}</span>
+                         </li>
                       ))}
                     </ul>
                   ) : null}
@@ -188,9 +191,12 @@ export function AnalysisResult({ file, summary, analysis, onNext, onBack }: Anal
                 <div className="flex-1">
                   <h3 className="font-semibold mb-2">개선 필요</h3>
                   {mapped.improvementPoints.length > 0 ? (
-                    <ul className="list-disc pl-5 space-y-1 text-sm text-muted-foreground">
+                    	<ul className="space-y-2 text-sm text-muted-foreground list-disc list-inside">
                       {mapped.improvementPoints.slice(0, 3).map((p, i) => (
-                        <li key={i}>{p}</li>
+                        		<li key={i} className="flex items-start gap-2 leading-relaxed">
+                            <span className="text-primary mt-0.5">•</span>
+                            <span>{p}</span>
+                          </li>
                       ))}
                     </ul>
                   ) : null}
@@ -205,9 +211,12 @@ export function AnalysisResult({ file, summary, analysis, onNext, onBack }: Anal
                 <div className="flex-1">
                   <h3 className="font-semibold mb-2">놓친 점</h3>
                   {mapped.missedPoints.length > 0 ? (
-                    <ul className="list-disc pl-5 space-y-1 text-sm text-muted-foreground">
+                    	<ul className="space-y-2 text-sm text-muted-foreground list-disc list-inside">
                       {mapped.missedPoints.slice(0, 3).map((p, i) => (
-                        <li key={i}>{p}</li>
+                          <li key={i} className="flex items-start gap-2 leading-relaxed">
+                          <span className="text-primary mt-0.5">•</span>
+                          <span>{p}</span>
+                        </li>                      
                       ))}
                     </ul>
                   ) : null}
