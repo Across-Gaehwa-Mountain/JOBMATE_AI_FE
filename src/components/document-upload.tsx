@@ -32,7 +32,22 @@ export function DocumentUpload({ onFileUploaded, onBack }: DocumentUploadProps) 
     const files = Array.from(e.dataTransfer.files);
     const file = files[0];
     
-    if (file && (file.type === 'application/pdf' || file.type === 'text/plain')) {
+    // 허용 확장자/타입
+    const allowedTypes = [
+      'application/pdf',
+      'text/plain',
+      'audio/mpeg', // mp3
+      'audio/wav',
+      'audio/x-wav',
+      'audio/mp4',
+      'audio/x-m4a',
+      'audio/aac',
+      'audio/ogg',
+      'video/mp4',
+      'video/x-m4v',
+      'video/quicktime',
+    ];
+    if (file && (allowedTypes.includes(file.type) || /\.(pdf|txt|mp3|wav|m4a|aac|ogg|mp4|mov)$/i.test(file.name))) {
       uploadFile(file);
     }
   }, []);
@@ -100,11 +115,11 @@ export function DocumentUpload({ onFileUploaded, onBack }: DocumentUploadProps) 
               <div className="text-center">
                 <Cloud className="w-16 h-16 text-muted-foreground mx-auto mb-6" />
                 <h3 className="text-xl font-semibold mb-2">파일을 드래그하거나 클릭하여 업로드</h3>
-                <p className="text-muted-foreground mb-6">PDF, TXT 파일을 지원합니다</p>
+                <p className="text-muted-foreground mb-6">PDF, TXT, MP3, WAV, MP4 등 오디오/영상 파일도 지원합니다</p>
                 
                 <input
                   type="file"
-                  accept=".pdf,.txt"
+                  accept=".pdf,.txt,.mp3,.wav,.m4a,.aac,.ogg,.mp4,.mov,.m4v,.qt,audio/*,video/*"
                   onChange={handleFileSelect}
                   className="hidden"
                   id="file-upload"
