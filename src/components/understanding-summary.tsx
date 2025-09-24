@@ -24,12 +24,17 @@ import { Button } from "./ui/button";
 import { Card } from "./ui/card";
 import { Textarea } from "./ui/textarea";
 
-
 // react-icons 기반 스피너
-function Spinner({ size = 20, className = "" }: { size?: number; className?: string }) {
+function Spinner({
+	size = 20,
+	className = "",
+}: {
+	size?: number;
+	className?: string;
+}) {
 	return (
-		<FaSpinner 
-			size={size} 
+		<FaSpinner
+			size={size}
 			className={`text-primary custom-spin ${className}`}
 		/>
 	);
@@ -59,50 +64,59 @@ export function UnderstandingSummary({
 	onAnalyze,
 	onBack,
 }: UnderstandingSummaryProps) {
-			const [summary, setSummary] = useState("");
-			const [isPreviewOpen, setIsPreviewOpen] = useState(false);
-			const [isSubmitting, setIsSubmitting] = useState(false);
-			const [isRecording, setIsRecording] = useState(false);
-			const [speechError, setSpeechError] = useState<string | null>(null);
-			const recognizerRef = useRef<SpeechSDK.SpeechRecognizer | null>(null);
-			const loadingDots = useLoadingDots(isSubmitting);
-	 // 마이크 음성 인식 시작/중지
-	 const handleMicClick = async () => {
-		 if (isRecording) {
-			 recognizerRef.current?.stopContinuousRecognitionAsync(() => {
-				 setIsRecording(false);
-			 });
-			 return;
-		 }
-		 setSpeechError(null);
-		 try {
-			 const speechConfig = SpeechSDK.SpeechConfig.fromSubscription(AZURE_SPEECH_KEY, AZURE_SPEECH_REGION);
-			 speechConfig.speechRecognitionLanguage = "ko-KR";
-			 const audioConfig = SpeechSDK.AudioConfig.fromDefaultMicrophoneInput();
-			 const recognizer = new SpeechSDK.SpeechRecognizer(speechConfig, audioConfig);
-			 recognizerRef.current = recognizer;
-			 setIsRecording(true);
-			 recognizer.recognizing = (_s, e) => {
-				 // 실시간 인식 중간 결과 (원하면 미리 보여줄 수 있음)
-			 };
-			 recognizer.recognized = (_s, e) => {
-				 if (e.result.reason === SpeechSDK.ResultReason.RecognizedSpeech) {
-					 setSummary((prev) => prev + (prev && !prev.endsWith(" ") ? " " : "") + e.result.text);
-				 }
-			 };
-			 recognizer.canceled = (_s, e) => {
-				 setIsRecording(false);
-				 if (e.errorDetails) setSpeechError(e.errorDetails);
-			 };
-			 recognizer.sessionStopped = () => {
-				 setIsRecording(false);
-			 };
-			 recognizer.startContinuousRecognitionAsync();
-		 } catch (err: any) {
-			 setSpeechError(err?.message || "음성 인식 오류");
-			 setIsRecording(false);
-		 }
-	 };
+	const [summary, setSummary] = useState("");
+	const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+	const [isSubmitting, setIsSubmitting] = useState(false);
+	const [isRecording, setIsRecording] = useState(false);
+	const [speechError, setSpeechError] = useState<string | null>(null);
+	const recognizerRef = useRef<SpeechSDK.SpeechRecognizer | null>(null);
+	const loadingDots = useLoadingDots(isSubmitting);
+	// 마이크 음성 인식 시작/중지
+	const handleMicClick = async () => {
+		if (isRecording) {
+			recognizerRef.current?.stopContinuousRecognitionAsync(() => {
+				setIsRecording(false);
+			});
+			return;
+		}
+		setSpeechError(null);
+		try {
+			const speechConfig = SpeechSDK.SpeechConfig.fromSubscription(
+				AZURE_SPEECH_KEY,
+				AZURE_SPEECH_REGION
+			);
+			speechConfig.speechRecognitionLanguage = "ko-KR";
+			const audioConfig = SpeechSDK.AudioConfig.fromDefaultMicrophoneInput();
+			const recognizer = new SpeechSDK.SpeechRecognizer(
+				speechConfig,
+				audioConfig
+			);
+			recognizerRef.current = recognizer;
+			setIsRecording(true);
+			recognizer.recognizing = (_s, e) => {
+				// 실시간 인식 중간 결과 (원하면 미리 보여줄 수 있음)
+			};
+			recognizer.recognized = (_s, e) => {
+				if (e.result.reason === SpeechSDK.ResultReason.RecognizedSpeech) {
+					setSummary(
+						(prev) =>
+							prev + (prev && !prev.endsWith(" ") ? " " : "") + e.result.text
+					);
+				}
+			};
+			recognizer.canceled = (_s, e) => {
+				setIsRecording(false);
+				if (e.errorDetails) setSpeechError(e.errorDetails);
+			};
+			recognizer.sessionStopped = () => {
+				setIsRecording(false);
+			};
+			recognizer.startContinuousRecognitionAsync();
+		} catch (err: any) {
+			setSpeechError(err?.message || "음성 인식 오류");
+			setIsRecording(false);
+		}
+	};
 
 	const handleAnalyze = async () => {
 		if (!summary.trim()) return;
@@ -213,17 +227,17 @@ export function UnderstandingSummary({
 	];
 
 	return (
-		   <div className="min-h-screen bg-background relative">
-			   {/* 전체 화면 디밍 및 중앙 스피너 */}
-							 {isSubmitting && (
-									 <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black/40 backdrop-blur-sm select-none">
-											 <Spinner size={48} className="text-primary" />
-											 <span className="mt-4 text-lg text-primary font-semibold animate-pulse select-none pointer-events-none">
-												 분석 중입니다{loadingDots}
-											 </span>
-									 </div>
-							 )}
-			   <div className="container mx-auto px-4 py-8">
+		<div className="min-h-screen bg-background relative">
+			{/* 전체 화면 디밍 및 중앙 스피너 */}
+			{isSubmitting && (
+				<div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black/40 backdrop-blur-sm select-none">
+					<Spinner size={48} className="text-primary" />
+					<span className="mt-4 text-lg text-primary font-semibold animate-pulse select-none pointer-events-none">
+						분석 중입니다{loadingDots}
+					</span>
+				</div>
+			)}
+			<div className="container mx-auto px-4 py-8">
 				{/* Header */}
 				<div className="mb-8">
 					<Button variant="ghost" onClick={onBack} className="mb-4">
@@ -274,7 +288,7 @@ export function UnderstandingSummary({
 					</Collapsible>
 
 					{/* Writing Guidelines */}
-					<div className="relative">
+					<div className="relative flex flex-col gap-6">
 						<Card className="p-6">
 							<div className="flex items-center gap-2 mb-4">
 								<HelpCircle className="w-5 h-5 text-primary" />
@@ -282,7 +296,10 @@ export function UnderstandingSummary({
 							</div>
 							<ul className="space-y-2 text-sm text-muted-foreground">
 								{guidelines.map((guideline, index) => (
-									<li key={index} className="flex items-start gap-2 leading-relaxed">
+									<li
+										key={index}
+										className="flex items-start gap-2 leading-relaxed"
+									>
 										<span className="text-primary mt-0.5">•</span>
 										<span>{guideline}</span>
 									</li>
@@ -292,33 +309,37 @@ export function UnderstandingSummary({
 
 						{/* Summary Input */}
 						<Card className="p-6">
-							   <div className="flex items-center gap-2 mb-4">
-								   <h3 className="font-semibold">내가 이해한 내용</h3>
-								   <TooltipProvider>
-									   <Tooltip>
-										   <TooltipTrigger>
-											   <HelpCircle className="w-4 h-4 text-muted-foreground" />
-										   </TooltipTrigger>
-										   <TooltipContent>
-											   <p>문서의 핵심 내용을 자신만의 언어로 정리해주세요</p>
-										   </TooltipContent>
-									   </Tooltip>
-								   </TooltipProvider>
-								   <Button
-									 type="button"
-									 size="icon"
-									 variant={isRecording ? "secondary" : "outline"}
-									 className={isRecording ? "animate-pulse border-primary" : ""}
-									 onClick={handleMicClick}
-									 disabled={isSubmitting}
-									 aria-label={isRecording ? "음성 입력 중지" : "음성 입력 시작"}
-								   >
-									 {isRecording ? <MicOff className="w-5 h-5 text-red-500" /> : <Mic className="w-5 h-5 text-primary" />}
-								   </Button>
-							   </div>
-							   {speechError && (
-								 <div className="text-xs text-red-500 mb-2">{speechError}</div>
-							   )}
+							<div className="flex items-center gap-2 mb-4">
+								<h3 className="font-semibold">내가 이해한 내용</h3>
+								<TooltipProvider>
+									<Tooltip>
+										<TooltipTrigger>
+											<HelpCircle className="w-4 h-4 text-muted-foreground" />
+										</TooltipTrigger>
+										<TooltipContent>
+											<p>문서의 핵심 내용을 자신만의 언어로 정리해주세요</p>
+										</TooltipContent>
+									</Tooltip>
+								</TooltipProvider>
+								<Button
+									type="button"
+									size="icon"
+									variant={isRecording ? "secondary" : "outline"}
+									className={isRecording ? "animate-pulse border-primary" : ""}
+									onClick={handleMicClick}
+									disabled={isSubmitting}
+									aria-label={isRecording ? "음성 입력 중지" : "음성 입력 시작"}
+								>
+									{isRecording ? (
+										<MicOff className="w-5 h-5 text-red-500" />
+									) : (
+										<Mic className="w-5 h-5 text-primary" />
+									)}
+								</Button>
+							</div>
+							{speechError && (
+								<div className="text-xs text-red-500 mb-2">{speechError}</div>
+							)}
 
 							<Textarea
 								value={summary}
